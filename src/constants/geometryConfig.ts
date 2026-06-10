@@ -35,7 +35,7 @@ export const GEOMETRY_CONFIG = {
     "stairLeft": 11673417,
     "stairEdge": 8329014,
     "concrete": 9142680,
-    "concreteOpacity": 0.5,
+    "concreteOpacity": 0.6,
     "wall": 14670385,
     "slab": 14144202,
     "soil": 11180415,
