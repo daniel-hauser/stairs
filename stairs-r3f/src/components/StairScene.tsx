@@ -87,22 +87,15 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
     const stairBaseY = stairTopY - totalRise;
 
     const concreteRise = Math.max(0, totalRise - stepRise);
-    const slope = totalRun > 1e-6 ? concreteRise / totalRun : 0;
-    const cutNormal = new THREE.Vector3(-slope, 1, 0);
-    const cutScale = 1 / Math.max(1e-6, cutNormal.length());
-    cutNormal.multiplyScalar(cutScale);
-    const stairCutPlane = new THREE.Plane(cutNormal, -stairBaseY * cutScale);
 
     // Materials
     const stairRightMat = new THREE.MeshStandardMaterial({
       color: C.stairRight, metalness: 0.05, roughness: 0.55, transparent: true, opacity: 0.9,
-      clippingPlanes: [stairCutPlane],
     });
     const stairLeftMat = new THREE.MeshStandardMaterial({
       color: C.stairLeft, metalness: 0.05, roughness: 0.55, transparent: true, opacity: 0.9,
-      clippingPlanes: [stairCutPlane],
     });
-    const stairEdgeMat = new THREE.LineBasicMaterial({ color: C.stairEdge, clippingPlanes: [stairCutPlane] });
+    const stairEdgeMat = new THREE.LineBasicMaterial({ color: C.stairEdge });
     const concreteMat = new THREE.MeshStandardMaterial({
       color: C.concrete, metalness: 0, roughness: 0.92, transparent: true, opacity: CFG.materials.concreteOpacity,
     });
@@ -424,7 +417,6 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
         color: 0x9b7a35,
         roughness: 0.85,
         metalness: 0.05,
-        clippingPlanes: [stairCutPlane],
       }),
     );
     podest.position.set(totalRun + podestLen / 2, stairTopY - podestHeight / 2, 0);

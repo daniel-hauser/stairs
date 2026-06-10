@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: read
   pages: write
@@ -39,16 +42,24 @@ jobs:
         run: npm run build
 
       - name: Setup Pages
+        if: ${{ github.event.repository.private == false }}
         uses: actions/configure-pages@v5
         with:
           enablement: true
 
       - name: Upload artifact
+        if: ${{ github.event.repository.private == false }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: stairs-r3f/dist
 
+      - name: Private repository notice
+        if: ${{ github.event.repository.private == true }}
+        run: |
+          echo "::warning::GitHub Pages deployment skipped. This repository is private and Pages is not available on the current plan."
+
   deploy:
+    if: ${{ github.event.repository.private == false }}
     needs: build
     runs-on: ubuntu-latest
     environment:
