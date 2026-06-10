@@ -476,17 +476,16 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
       depth: headspaceDepth,
       bevelEnabled: false,
     });
-    const headspaceMesh = new THREE.Mesh(
-      headspaceGeom,
-      new THREE.MeshBasicMaterial({
-        color: CFG.materials.headspace,
-        transparent: true,
-        opacity: CFG.materials.headspaceOpacity,
-        depthWrite: false,
+    // Show only wireframe outline of headspace box (no solid fill)
+    const headspaceEdges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(headspaceGeom),
+      new THREE.LineBasicMaterial({
+        color: 0xff4444,
+        linewidth: 1,
       }),
     );
-    headspaceMesh.position.set(0, 0, -headspaceDepth / 2);
-    root.add(headspaceMesh);
+    headspaceEdges.position.set(0, 0, -headspaceDepth / 2);
+    root.add(headspaceEdges);
     addLabel(`headspace ${headspaceCm.toFixed(0)} cm`, totalRun * 0.52, Math.min(soilLevelY, headspaceTopRightY) + 0.08, STAIR_WIDTH * 0.8);
 
     const slabIntersectStartX = Math.max(0, leftWallOuterLeftX);
