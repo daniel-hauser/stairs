@@ -111,7 +111,7 @@ function App() {
                 </div>
               </div>
             </div>
-            <div className="stat">
+            <div className="stat stat-wide">
               <span className="k">Individual rise ({rise.toFixed(2)} cm)</span>
               <div style={{ marginTop: '6px', display: 'grid' }}>
                 <input 
@@ -126,7 +126,7 @@ function App() {
                 />
               </div>
             </div>
-            <div className="stat">
+            <div className="stat stat-wide">
               <span className="k">Usable tread run (L/R) ({run.toFixed(2)} cm)</span>
               <div style={{ marginTop: '6px', display: 'grid' }}>
                 <input 
