@@ -42,6 +42,8 @@ npm --prefix stairs-r3f run sync-geometry
 ## Deployment
 
 Push to `main` to trigger `.github/workflows/deploy-pages.yml`.
+GitHub Pages URL: [https://daniel-hauser.github.io/stairs/](https://daniel-hauser.github.io/stairs/)
+
 The workflow:
 
 1. installs dependencies in `stairs-r3f`

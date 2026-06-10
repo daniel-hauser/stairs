@@ -21,9 +21,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: stairs-r3f
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,7 +30,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: stairs-r3f/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -51,7 +48,7 @@ jobs:
         if: ${{ github.event.repository.private == false }}
         uses: actions/upload-pages-artifact@v3
         with:
-          path: stairs-r3f/dist
+          path: dist
 
       - name: Private repository notice
         if: ${{ github.event.repository.private == true }}
