@@ -117,10 +117,15 @@ body {
   min-height: 24px;
 }
 
+.quick-actions .controls-mini {
+  margin-top: 0;
+  justify-content: space-between;
+}
+
 .button.mini {
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 0;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   line-height: 1.1;
 }
 
@@ -143,9 +148,9 @@ body {
   background: transparent;
   color: var(--cp-text-muted);
   font: inherit;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   line-height: 1.1;
-  padding: 3px 8px;
+  padding: 2px 7px;
   cursor: pointer;
 }
 
@@ -475,8 +480,8 @@ svg {
 
   .button.mini,
   .toggle-btn {
-    padding: 2px 6px;
-    font-size: 0.66rem;
+    padding: 2px 5px;
+    font-size: 0.62rem;
   }
 
   .three-shell,
@@ -485,13 +490,29 @@ svg {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 350px) {
   .control-section .stats-grid {
     grid-template-columns: 1fr;
   }
 
   .control-section .stats-grid .stat-wide {
-    grid-column: auto;
+    grid-column: span 1;
+  }
+}
+
+@media (min-width: 351px) {
+  .control-section .stats-grid .stat-wide {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .control-section .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .control-section .stats-grid .stat-wide {
+    grid-column: span 2;
   }
 
   .three-shell,

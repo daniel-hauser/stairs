@@ -75,8 +75,7 @@ function App() {
         <div className="stats-card">
           {/* Control Sliders */}
           <div className="stats-grid">
-            <div className="stat">
-              <span className="k">Reset</span>
+            <div className="stat stat-wide quick-actions">
               <div className="controls-mini">
                 <button
                   className="button mini"
@@ -88,25 +87,20 @@ function App() {
                 >
                   Reset
                 </button>
-              </div>
-            </div>
-            <div className="stat">
-              <span className="k">Starting</span>
-              <div className="controls-mini">
-                <div className="side-toggle" role="group" aria-label="Starting">
+                <div className="side-toggle" role="group" aria-label="Starting side">
                   <button
                     className={`toggle-btn ${!startSideLeft ? 'active' : ''}`}
                     onClick={() => setStartSideLeft(false)}
                     type="button"
                   >
-                    Right
+                    R
                   </button>
                   <button
                     className={`toggle-btn ${startSideLeft ? 'active' : ''}`}
                     onClick={() => setStartSideLeft(true)}
                     type="button"
                   >
-                    Left
+                    L
                   </button>
                 </div>
               </div>
