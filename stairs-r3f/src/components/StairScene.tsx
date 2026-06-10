@@ -86,14 +86,23 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
     const stairTopY = topFloorY - fixedTopEntryDrop;
     const stairBaseY = stairTopY - totalRise;
 
+    const concreteRise = Math.max(0, totalRise - stepRise);
+    const slope = totalRun > 1e-6 ? concreteRise / totalRun : 0;
+    const cutNormal = new THREE.Vector3(-slope, 1, 0);
+    const cutScale = 1 / Math.max(1e-6, cutNormal.length());
+    cutNormal.multiplyScalar(cutScale);
+    const stairCutPlane = new THREE.Plane(cutNormal, -stairBaseY * cutScale);
+
     // Materials
     const stairRightMat = new THREE.MeshStandardMaterial({
       color: C.stairRight, metalness: 0.05, roughness: 0.55, transparent: true, opacity: 0.9,
+      clippingPlanes: [stairCutPlane],
     });
     const stairLeftMat = new THREE.MeshStandardMaterial({
       color: C.stairLeft, metalness: 0.05, roughness: 0.55, transparent: true, opacity: 0.9,
+      clippingPlanes: [stairCutPlane],
     });
-    const stairEdgeMat = new THREE.LineBasicMaterial({ color: C.stairEdge });
+    const stairEdgeMat = new THREE.LineBasicMaterial({ color: C.stairEdge, clippingPlanes: [stairCutPlane] });
     const concreteMat = new THREE.MeshStandardMaterial({
       color: C.concrete, metalness: 0, roughness: 0.92, transparent: true, opacity: CFG.materials.concreteOpacity,
     });
@@ -161,8 +170,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
       addLabel(text, center.x, center.y, center.z);
     };
 
-    // Concrete carrier (triangular prism)
-    const concreteRise = Math.max(0, totalRise - stepRise);
+    // Concrete carrier (flat-faced triangular prism)
     const concreteShape = new THREE.Shape();
     concreteShape.moveTo(0, 0);
     concreteShape.lineTo(totalRun, 0);
@@ -412,7 +420,12 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
     const podestHeight = stepRise;
     const podest = new THREE.Mesh(
       new THREE.BoxGeometry(podestLen, podestHeight, STAIR_WIDTH),
-      new THREE.MeshStandardMaterial({ color: 0x9b7a35, roughness: 0.85, metalness: 0.05 }),
+      new THREE.MeshStandardMaterial({
+        color: 0x9b7a35,
+        roughness: 0.85,
+        metalness: 0.05,
+        clippingPlanes: [stairCutPlane],
+      }),
     );
     podest.position.set(totalRun + podestLen / 2, stairTopY - podestHeight / 2, 0);
     root.add(podest);
@@ -571,7 +584,8 @@ export function StairScene(props: StairSceneProps) {
       gl={{ alpha: false }}
       style={{ width: '100%', height: '100%' }}
       camera={{ fov: 42, near: 0.1, far: 100, position: [2.6, 2.2, 4.2] }}
-      onCreated={({ camera }) => {
+      onCreated={({ camera, gl }) => {
+        gl.localClippingEnabled = true;
         const current = camera.position.distanceTo(zoomTarget);
         props.onZoomDebugChange?.({ current, min: 1.0, max: 6.5 });
       }}
