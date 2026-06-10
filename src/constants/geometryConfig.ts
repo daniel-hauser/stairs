@@ -39,8 +39,8 @@ export const GEOMETRY_CONFIG = {
     "wall": 14670385,
     "slab": 14144202,
     "soil": 11180415,
-    "transparentWall": 2989199,
-    "transparentWallOpacity": 0.35,
+    "transparentWall": 16776960,
+    "transparentWallOpacity": 0.08,
     "headspace": 5224150,
     "headspaceOpacity": 0.22,
     "levelGuide": {
