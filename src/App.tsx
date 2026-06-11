@@ -108,9 +108,9 @@ function App() {
                   className={`toggle-btn ${showLabels ? 'active' : ''}`}
                   onClick={() => setShowLabels(v => !v)}
                   type="button"
-                  title="Toggle measurement labels"
+                  title="Toggle labels"
                 >
-                  dim
+                  labels
                 </button>
               </div>
             </div>

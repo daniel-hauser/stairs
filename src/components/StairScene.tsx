@@ -149,8 +149,46 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       return sprite;
     };
 
+    // Dimension text — no background box, just colored text
+    const makeDimSprite = (text: string) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+
+      const fontSize = 26;
+      const padX = 6;
+      const padY = 6;
+      ctx.font = `500 ${fontSize}px Segoe UI`;
+      const textWidth = Math.ceil(ctx.measureText(text).width);
+      canvas.width = textWidth + padX * 2;
+      canvas.height = fontSize + padY * 2;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(91, 70, 50, 0.95)';
+      ctx.font = `500 ${fontSize}px Segoe UI`;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, padX, canvas.height / 2 + 1);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const material = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false });
+      const sprite = new THREE.Sprite(material);
+      const baseHeight = 0.09;
+      const aspect = canvas.width / canvas.height;
+      sprite.scale.set(baseHeight * aspect, baseHeight, 1);
+      sprite.renderOrder = 20;
+      return sprite;
+    };
+
     const addLabel = (text: string, x: number, y: number, z: number) => {
       const sprite = makeLabelSprite(text);
+      if (!sprite) return;
+      sprite.position.set(x, y, z);
+      labelsGroup.add(sprite);
+    };
+
+    const addDimLabel = (text: string, x: number, y: number, z: number) => {
+      const sprite = makeDimSprite(text);
       if (!sprite) return;
       sprite.position.set(x, y, z);
       labelsGroup.add(sprite);
@@ -184,7 +222,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       root.add(new THREE.Line(lineGeom, measurementMat));
       root.add(new THREE.Line(startTickGeom, measurementMat));
       root.add(new THREE.Line(endTickGeom, measurementMat));
-      addLabel(text, (x1 + x2) / 2, dimensionY + 0.05, z);
+      addDimLabel(text, (x1 + x2) / 2, dimensionY + 0.05, z);
     };
 
     const addVerticalDimension = (text: string, y1: number, y2: number, x: number, z: number, shift = 0.08) => {
@@ -204,7 +242,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       root.add(new THREE.Line(lineGeom, measurementMat));
       root.add(new THREE.Line(startTickGeom, measurementMat));
       root.add(new THREE.Line(endTickGeom, measurementMat));
-      addLabel(text, dimensionX + 0.03, (y1 + y2) / 2, z);
+      addDimLabel(text, dimensionX + 0.03, (y1 + y2) / 2, z);
     };
 
     // Concrete carrier (flat-faced triangular prism)
