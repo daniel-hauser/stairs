@@ -40,9 +40,17 @@ html[data-theme="dark"] {
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+  overflow: clip;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
-  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
   background:
     radial-gradient(circle at top left, var(--cp-accent-soft), transparent 36%),
     linear-gradient(180deg, var(--cp-bg-elevated), var(--cp-bg));
@@ -53,6 +61,7 @@ body {
 .app {
   position: relative;
   width: 100%;
+  height: 100svh;
   height: 100dvh;
   overflow: hidden;
 }
@@ -155,6 +164,7 @@ svg {
   left: 0;
   right: 0;
   bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom);
   transform: translateY(calc(100% - 58px));
   opacity: 0.98;
 }
@@ -259,7 +269,7 @@ svg {
   background: transparent;
   padding: 4px 0 6px;
   cursor: ns-resize;
-  touch-action: pan-y;
+  touch-action: none;
 }
 
 .sheet-pill {
@@ -319,6 +329,15 @@ input[type="range"] {
 }
 
 @media (max-width: 900px) {
+  .app,
+  .viewport-stage,
+  .view-shell,
+  .full-view {
+    height: 100svh;
+    height: 100dvh;
+    min-height: 100svh;
+  }
+
   .floating-toolbar {
     top: 8px;
     left: 8px;
@@ -328,11 +347,11 @@ input[type="range"] {
   }
 
   .control-section.mobile .stats-card {
-    max-height: min(52dvh, 500px);
+    max-height: min(52svh, 500px);
   }
 
   .control-section.mobile.open .stats-card {
-    max-height: min(68dvh, 640px);
+    max-height: min(68svh, 640px);
   }
 
   .stats-grid {
@@ -367,6 +386,6 @@ input[type="range"] {
   }
 
   .control-section.mobile .stats-card {
-    max-height: min(56dvh, 540px);
+    max-height: min(56svh, 540px);
   }
 }

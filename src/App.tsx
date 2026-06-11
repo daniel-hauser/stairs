@@ -89,13 +89,16 @@ function App() {
   const riseSafeMin = (STAIR_FORMULA.min - run) / 2
   const riseSafeMax = (STAIR_FORMULA.max - run) / 2
 
-  const handleSheetTouchStart = (event: React.TouchEvent<HTMLButtonElement>) => {
-    swipeStartY.current = event.touches[0]?.clientY ?? null
+  const handleSheetPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse') return
+    swipeStartY.current = event.clientY
+    event.currentTarget.setPointerCapture(event.pointerId)
   }
 
-  const handleSheetTouchEnd = (event: React.TouchEvent<HTMLButtonElement>) => {
+  const handleSheetPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse') return
     if (swipeStartY.current == null) return
-    const endY = event.changedTouches[0]?.clientY ?? swipeStartY.current
+    const endY = event.clientY
     const deltaY = endY - swipeStartY.current
     if (deltaY < -22) {
       setControlsOpen(true)
@@ -167,8 +170,11 @@ function App() {
               type="button"
               className="sheet-handle"
               onClick={() => setControlsOpen((v) => !v)}
-              onTouchStart={handleSheetTouchStart}
-              onTouchEnd={handleSheetTouchEnd}
+              onPointerDown={handleSheetPointerDown}
+              onPointerUp={handleSheetPointerUp}
+              onPointerCancel={() => {
+                swipeStartY.current = null
+              }}
               aria-label="Expand or collapse controls"
             >
               <span className="sheet-pill" />
