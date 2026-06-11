@@ -601,12 +601,14 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     headspaceEdges.position.set(0, 0, -headspaceDepth / 2);
     root.add(headspaceEdges);
 
-    // Floor/podest segment of headspace so the full movement envelope is visible.
+    // Lower-floor continuation of headspace (like a zero-height podest at the bottom).
+    const lowerFloorLen = podestLen;
+    const lowerTopY = topLeftClippedY;
     const floorHeadspaceShape = new THREE.Shape();
-    floorHeadspaceShape.moveTo(totalRun, topFloorY);
-    floorHeadspaceShape.lineTo(stairTopX, topFloorY);
-    floorHeadspaceShape.lineTo(stairTopX, topFloorY + headspaceHeight);
-    floorHeadspaceShape.lineTo(totalRun, topFloorY + headspaceHeight);
+    floorHeadspaceShape.moveTo(-lowerFloorLen, headspaceBottomLeftY);
+    floorHeadspaceShape.lineTo(0, headspaceBottomLeftY);
+    floorHeadspaceShape.lineTo(0, lowerTopY);
+    floorHeadspaceShape.lineTo(-lowerFloorLen, lowerTopY);
     floorHeadspaceShape.closePath();
 
     const floorHeadspaceGeom = new THREE.ExtrudeGeometry(floorHeadspaceShape, {
