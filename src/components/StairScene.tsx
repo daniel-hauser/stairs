@@ -376,6 +376,19 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     const leftWallOuterLeftX = leftWallTowerEndX - leftWallTowerThicknessX;
 
+    // Per-step horizontal accumulation from the left edge of the inner wall.
+    // Shows +n values at each step/riser station.
+    const stepMeasureZ = STAIR_WIDTH * 0.96;
+    addDimLabel('+0', leftWallOuterLeftX, stairBaseY + 0.03, stepMeasureZ);
+    for (let i = 0; i < dynamicCount; i++) {
+      const stepFaceX = i * stepAdvance;
+      const fromInnerWallCm = (stepFaceX - leftWallOuterLeftX) / SCALE;
+      const labelY = stairBaseY + (i + 1) * stepRise + 0.035;
+      addDimLabel(`+${fromInnerWallCm.toFixed(0)}`, stepFaceX, labelY, stepMeasureZ);
+    }
+    const topStepFromInnerWallCm = (totalRun - leftWallOuterLeftX) / SCALE;
+    addDimLabel(`+${topStepFromInnerWallCm.toFixed(0)}`, totalRun, stairTopY + 0.04, stepMeasureZ);
+
     // Vertical: ceiling height from ground and floor-to-floor — placed outside left wall
     const measureLeftX = leftWallOuterLeftX - 0.18;
     addVerticalDimension(`ceiling ${(ceilingY / SCALE).toFixed(0)} cm`, 0, ceilingY, measureLeftX, wallWideCenterZ, -0.10);
