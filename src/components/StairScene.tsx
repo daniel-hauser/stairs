@@ -293,6 +293,10 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       const edge = new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), stairEdgeMat);
       edge.position.copy(box.position);
       root.add(edge);
+      // Cumulative height label on the riser face (no background)
+      const riserFaceX = i * stepAdvance; // left (lower) face of this step
+      const riserTopY = stairBaseY + (i + 1) * stepRise;
+      addDimLabel(`+${((i + 1) * rise).toFixed(1)}`, riserFaceX, riserTopY + 0.012, treadZ);
       (isRightTread ? rightCenters : leftCenters).push({ x, y, z: treadZ });
     }
 
