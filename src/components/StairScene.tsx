@@ -67,9 +67,9 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     const ceilingY = CEILING_RISE * SCALE;
     const targetRiseToFloor = (TOP_FLOOR_RISE - rise) * SCALE;
     const riseResidual = totalRise - targetRiseToFloor;
-    // Allow partial under-floor behavior by carrying residual into the top entry drop.
-    const fixedTopEntryDrop = THREE.MathUtils.clamp(stepRise - riseResidual, stepRise * 0.35, stepRise * 1.45);
-    const underFloorMismatch = fixedTopEntryDrop < stepRise - 0.005;
+    // Keep construction pinned from top floor through a fixed rise-high podest, then down.
+    const fixedTopEntryDrop = stepRise;
+    const underFloorMismatch = riseResidual > 0.005;
     const stairTopY = topFloorY - fixedTopEntryDrop;
     const stairBaseY = stairTopY - totalRise;
 
@@ -77,22 +77,10 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     // Materials
     const stairRightMat = new THREE.MeshStandardMaterial({
-      color: underFloorMismatch ? 0xff5233 : C.stairRight,
-      emissive: underFloorMismatch ? 0x2a0802 : 0x000000,
-      emissiveIntensity: underFloorMismatch ? 0.85 : 0,
-      metalness: 0.05,
-      roughness: 0.55,
-      transparent: true,
-      opacity: 0.9,
+      color: C.stairRight, metalness: 0.05, roughness: 0.55, transparent: true, opacity: 0.9,
     });
     const stairLeftMat = new THREE.MeshStandardMaterial({
-      color: underFloorMismatch ? 0xffb02f : C.stairLeft,
-      emissive: underFloorMismatch ? 0x2a1402 : 0x000000,
-      emissiveIntensity: underFloorMismatch ? 0.85 : 0,
-      metalness: 0.05,
-      roughness: 0.55,
-      transparent: true,
-      opacity: 0.9,
+      color: C.stairLeft, metalness: 0.05, roughness: 0.55, transparent: true, opacity: 0.9,
     });
     const stairEdgeMat = new THREE.LineBasicMaterial({ color: C.stairEdge });
     const concreteMat = new THREE.MeshStandardMaterial({
@@ -529,9 +517,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     const podest = new THREE.Mesh(
       new THREE.BoxGeometry(podestLen, podestHeight, STAIR_WIDTH),
       new THREE.MeshStandardMaterial({
-        color: underFloorMismatch ? 0xff6a39 : 0x9b7a35,
-        emissive: underFloorMismatch ? 0x2a0b02 : 0x000000,
-        emissiveIntensity: underFloorMismatch ? 0.75 : 0,
+        color: 0x9b7a35,
         roughness: 0.85,
         metalness: 0.05,
       }),
@@ -569,8 +555,8 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     }
 
     addVerticalDimension(`entry rise ${(fixedTopEntryDrop / SCALE).toFixed(1)} cm`, stairTopY, topFloorY, stairTopX, STAIR_WIDTH * 0.86, 0.10);
-    if (Math.abs(fixedTopEntryDrop - stepRise) > 0.005) {
-      const deltaCm = (fixedTopEntryDrop - stepRise) / SCALE;
+    if (Math.abs(riseResidual) > 0.005) {
+      const deltaCm = riseResidual / SCALE;
       addDimLabel(
         `Δ floor ${deltaCm >= 0 ? '+' : ''}${deltaCm.toFixed(1)} cm`,
         stairTopX + 0.12,
