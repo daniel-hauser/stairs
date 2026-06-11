@@ -113,6 +113,8 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     const labelsGroup = new THREE.Group();
     root.add(labelsGroup);
+    const dimsGroup = new THREE.Group();
+    root.add(dimsGroup);
 
     const makeLabelSprite = (text: string) => {
       const canvas = document.createElement('canvas');
@@ -191,7 +193,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       const sprite = makeDimSprite(text);
       if (!sprite) return;
       sprite.position.set(x, y, z);
-      labelsGroup.add(sprite);
+      dimsGroup.add(sprite);
     };
 
     const addLabelForMesh = (text: string, mesh: THREE.Object3D, yOffset = 0.08) => {
@@ -219,9 +221,9 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
         new THREE.Vector3(x2, y, z),
         new THREE.Vector3(x2, dimensionY, z),
       ]);
-      root.add(new THREE.Line(lineGeom, measurementMat));
-      root.add(new THREE.Line(startTickGeom, measurementMat));
-      root.add(new THREE.Line(endTickGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(lineGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(startTickGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(endTickGeom, measurementMat));
       addDimLabel(text, (x1 + x2) / 2, dimensionY + 0.05, z);
     };
 
@@ -239,9 +241,9 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
         new THREE.Vector3(x, y2, z),
         new THREE.Vector3(dimensionX, y2, z),
       ]);
-      root.add(new THREE.Line(lineGeom, measurementMat));
-      root.add(new THREE.Line(startTickGeom, measurementMat));
-      root.add(new THREE.Line(endTickGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(lineGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(startTickGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(endTickGeom, measurementMat));
       addDimLabel(text, dimensionX + 0.03, (y1 + y2) / 2, z);
     };
 

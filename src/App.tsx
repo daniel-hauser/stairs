@@ -23,7 +23,7 @@ function App() {
   const [rise, setRise] = useState(STAIR_DEFAULTS.rise)
   const [run, setRun] = useState(STAIR_DEFAULTS.run)
   const [startSideLeft, setStartSideLeft] = useState(STAIR_DEFAULTS.startSideLeft)
-  const [showLabels, setShowLabels] = useState(true)
+  const [showLabels, setShowLabels] = useState(false)
 
   const deferredRise = useDeferredValue(rise)
   const deferredRun = useDeferredValue(run)
