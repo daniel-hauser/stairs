@@ -46,6 +46,8 @@ const TRANSPARENT_WALL_COLOR = 0x2f6cc8;
 
 function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, showLabels = true, onZoomDebugChange }: StairSceneProps) {
   const lastZoomRef = useRef<number>(Number.NaN);
+  const didAutoFrameRef = useRef(false);
+  const lastPortraitModeRef = useRef<boolean | null>(null);
   const { camera, size } = useThree();
   const zoomTarget = useMemo(() => new THREE.Vector3(1.25, 1.3, 0), []);
 
@@ -711,6 +713,13 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
   }, [size.height, size.width, stairGroup]);
 
   useEffect(() => {
+    const portraitModeChanged = lastPortraitModeRef.current !== cameraFit.isPortraitMobile;
+    const shouldAutoFrame = !didAutoFrameRef.current || portraitModeChanged;
+
+    if (!shouldAutoFrame) {
+      return;
+    }
+
     if ('fov' in camera) {
       const perspectiveCamera = camera as THREE.PerspectiveCamera;
       perspectiveCamera.fov = cameraFit.fov;
@@ -724,7 +733,10 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     framingDir.normalize();
     camera.position.copy(zoomTarget).addScaledVector(framingDir, cameraFit.initialDistance);
     camera.lookAt(zoomTarget);
-  }, [camera, cameraFit, zoomTarget]);
+
+    didAutoFrameRef.current = true;
+    lastPortraitModeRef.current = cameraFit.isPortraitMobile;
+  }, [camera, cameraFit.fov, cameraFit.initialDistance, cameraFit.isPortraitMobile, zoomTarget]);
 
   useEffect(() => {
     stairGroup.labelsGroup.visible = showLabels;
