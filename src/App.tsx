@@ -8,17 +8,10 @@ type ViewMode = '3d' | '2d'
 
 function inferNumRises(rise: number) {
   const topFloorRise = 289
-  const targetRiseToFloor = topFloorRise - rise
-  let numRises = Math.max(1, Math.round(targetRiseToFloor / rise))
-  let belowFloor = numRises * rise - targetRiseToFloor
-  if (belowFloor > rise && numRises > 1) {
-    numRises -= 1
-    belowFloor = numRises * rise - targetRiseToFloor
-  }
-  if (belowFloor < -(rise / 2)) {
-    numRises += 1
-  }
-  return numRises
+  // Top-pinned construction: top floor -> podest (1 rise) -> flight.
+  // Use full-step count only so the lowest step never becomes a partial under-floor step.
+  const maxFlightRises = Math.floor((topFloorRise - rise) / rise + 1e-9)
+  return Math.max(1, maxFlightRises)
 }
 
 function App() {
@@ -54,9 +47,7 @@ function App() {
   // Calculate derived values
   const totalRise = rise * numRises
   const totalRun = (run / 2) * numRises
-  const targetRiseToFloor = 289 - rise
-  const riseResidual = totalRise - targetRiseToFloor
-  const entryRise = Math.max(rise * 0.35, Math.min(rise * 1.45, rise - riseResidual))
+  const entryRise = rise
   const floorRise = totalRise + entryRise
   const floorDelta = floorRise - 289
   const slope = Math.atan2(totalRise, totalRun) * (180 / Math.PI)
