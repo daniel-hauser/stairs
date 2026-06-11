@@ -2,9 +2,9 @@
  * Default stair design parameters
  */
 export const STAIR_DEFAULTS = {
-  rise: 18.0625, // cm - Individual rise height
-  run: 27.0702, // cm - Usable tread run (effective horizontal distance per step)
-  totalRise: 270.9, // cm - Total vertical distance
+  rise: 18.0, // cm - Individual rise height (balanced with floor alignment)
+  run: 26.0, // cm - Usable tread run tuned for 2R+T comfort band center
+  totalRise: 270.0, // cm - Total vertical distance
   numRises: 15,
   startSideLeft: false, // Step 2 starts on left
   headspace: 200, // cm - Required vertical clearance above stair line

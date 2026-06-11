@@ -29,18 +29,16 @@ function App() {
   const [showLabels, setShowLabels] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('3d')
   const [isMobile, setIsMobile] = useState<boolean>(() => window.matchMedia(mobileBreakpoint).matches)
-  const [controlsOpen, setControlsOpen] = useState<boolean>(() => !window.matchMedia(mobileBreakpoint).matches)
+  const [controlsOpen, setControlsOpen] = useState<boolean>(true)
   const swipeStartY = useRef<number | null>(null)
 
   useEffect(() => {
     const media = window.matchMedia(mobileBreakpoint)
     const handleChange = (event: MediaQueryListEvent) => {
       setIsMobile(event.matches)
-      setControlsOpen(!event.matches)
     }
 
     setIsMobile(media.matches)
-    setControlsOpen(!media.matches)
     media.addEventListener('change', handleChange)
     return () => media.removeEventListener('change', handleChange)
   }, [])
