@@ -623,15 +623,19 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     root.add(headspaceEdges);
 
     // Lower-floor continuation of headspace (like a zero-height podest at the bottom).
-    // Must start from actual floor level, not from the first step top.
+    // Use an angled transition (not a rectangular block) so motion from floor to first step
+    // follows the same linear envelope behavior.
     const lowerFloorLen = podestLen;
+    const lowerFloorX = -lowerFloorLen;
     const lowerFloorY = stairBaseY;
-    const lowerTopY = Math.min(soilLevelY, lowerFloorY + headspaceHeight);
+    const lowerBottomAtStairY = headspaceBottomLeftY;
+    const lowerTopAtFloorY = Math.min(soilLevelY, lowerFloorY + headspaceHeight);
+    const lowerTopAtStairY = Math.min(soilLevelY, topLeftClippedY);
     const floorHeadspaceShape = new THREE.Shape();
-    floorHeadspaceShape.moveTo(-lowerFloorLen, lowerFloorY);
-    floorHeadspaceShape.lineTo(0, lowerFloorY);
-    floorHeadspaceShape.lineTo(0, lowerTopY);
-    floorHeadspaceShape.lineTo(-lowerFloorLen, lowerTopY);
+    floorHeadspaceShape.moveTo(lowerFloorX, lowerFloorY);
+    floorHeadspaceShape.lineTo(0, lowerBottomAtStairY);
+    floorHeadspaceShape.lineTo(0, lowerTopAtStairY);
+    floorHeadspaceShape.lineTo(lowerFloorX, lowerTopAtFloorY);
     floorHeadspaceShape.closePath();
 
     const floorHeadspaceGeom = new THREE.ExtrudeGeometry(floorHeadspaceShape, {
