@@ -1,8 +1,10 @@
-import { useDeferredValue, useMemo, useState, type CSSProperties } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import './App.css'
 import { StairScene } from './components/StairScene.tsx'
 import { StairProfile2D } from './components/StairProfile2D'
 import { STAIR_DEFAULTS, STAIR_FORMULA } from './constants/stairDefaults'
+
+type ViewMode = '3d' | '2d'
 
 function inferNumRises(rise: number) {
   const topFloorRise = 289
@@ -20,10 +22,27 @@ function inferNumRises(rise: number) {
 }
 
 function App() {
+  const mobileBreakpoint = '(max-width: 900px)'
   const [rise, setRise] = useState(STAIR_DEFAULTS.rise)
   const [run, setRun] = useState(STAIR_DEFAULTS.run)
   const [startSideLeft, setStartSideLeft] = useState(STAIR_DEFAULTS.startSideLeft)
   const [showLabels, setShowLabels] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('3d')
+  const [isMobile, setIsMobile] = useState<boolean>(() => window.matchMedia(mobileBreakpoint).matches)
+  const [controlsOpen, setControlsOpen] = useState<boolean>(() => !window.matchMedia(mobileBreakpoint).matches)
+
+  useEffect(() => {
+    const media = window.matchMedia(mobileBreakpoint)
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsMobile(event.matches)
+      setControlsOpen(!event.matches)
+    }
+
+    setIsMobile(media.matches)
+    setControlsOpen(!media.matches)
+    media.addEventListener('change', handleChange)
+    return () => media.removeEventListener('change', handleChange)
+  }, [])
 
   const deferredRise = useDeferredValue(rise)
   const deferredRun = useDeferredValue(run)
@@ -71,10 +90,61 @@ function App() {
 
   return (
     <main className="app">
-      {/* Controls Section */}
-      <section className="control-section">
+      <section className="viewport-stage">
+        <div className="floating-toolbar">
+          <div className="view-toggle" role="group" aria-label="View mode">
+            <button
+              type="button"
+              className={`toggle-btn view-btn ${viewMode === '3d' ? 'active' : ''}`}
+              onClick={() => setViewMode('3d')}
+            >
+              3D
+            </button>
+            <button
+              type="button"
+              className={`toggle-btn view-btn ${viewMode === '2d' ? 'active' : ''}`}
+              onClick={() => setViewMode('2d')}
+            >
+              2D
+            </button>
+          </div>
+          <button
+            type="button"
+            className="toggle-btn controls-btn"
+            onClick={() => setControlsOpen((v) => !v)}
+            title="Show or hide controls"
+          >
+            {controlsOpen ? 'hide' : 'controls'}
+          </button>
+        </div>
+
+        <div className="view-shell">
+          {viewMode === '3d' ? (
+            <div className="three-shell full-view">
+              <StairScene
+                rise={deferredRise}
+                run={deferredRun}
+                numRises={deferredNumRises}
+                startSideLeft={deferredStartSideLeft}
+                headspaceCm={200}
+                showLabels={showLabels}
+              />
+            </div>
+          ) : (
+            <div className="svg-shell full-view">
+              <StairProfile2D
+                rise={deferredRise}
+                run={deferredRun}
+                numRises={deferredNumRises}
+                startSideLeft={deferredStartSideLeft}
+              />
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className={`control-section ${controlsOpen ? 'open' : ''} ${isMobile ? 'mobile' : 'desktop'}`}>
         <div className="stats-card">
-          {/* Control Sliders */}
           <div className="stats-grid">
             <div className="stat stat-wide quick-actions">
               <div className="controls-mini">
@@ -114,36 +184,39 @@ function App() {
                 </button>
               </div>
             </div>
-            <div className="stat stat-wide">
+
+            <div className="stat slider-card">
               <span className="k">Individual rise ({rise.toFixed(2)} cm)</span>
               <div style={{ marginTop: '6px', display: 'grid' }}>
-                <input 
+                <input
                   className="range-safe"
                   style={rangeStyle(10, 30, riseSafeMin, riseSafeMax)}
-                  type="range" 
-                  min="10" 
-                  max="30" 
-                  step="0.0625" 
+                  type="range"
+                  min="10"
+                  max="30"
+                  step="0.0625"
                   value={rise}
                   onChange={(e) => setRise(parseFloat(e.target.value))}
                 />
               </div>
             </div>
-            <div className="stat stat-wide">
+
+            <div className="stat slider-card">
               <span className="k">Usable tread run (L/R) ({run.toFixed(2)} cm)</span>
               <div style={{ marginTop: '6px', display: 'grid' }}>
-                <input 
+                <input
                   className="range-safe"
                   style={rangeStyle(20, 35, runSafeMin, runSafeMax)}
-                  type="range" 
-                  min="20" 
-                  max="35" 
-                  step="0.0667" 
+                  type="range"
+                  min="20"
+                  max="35"
+                  step="0.0667"
                   value={run}
                   onChange={(e) => setRun(parseFloat(e.target.value))}
                 />
               </div>
             </div>
+
             <div className="stat">
               <span className="k">Total rise</span>
               <span className="v">{totalRise.toFixed(1)} cm</span>
@@ -168,41 +241,6 @@ function App() {
               <span className="k">Concrete volume</span>
               <span className="v">{concreteVolume.toFixed(3)} m3</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3D View Section */}
-      <section className="three-wrap">
-        <div className="viz-card">
-          <div className="viz-header">
-            <div>
-              <h2>3D view</h2>
-            </div>
-          </div>
-          <div className="three-shell">
-            <StairScene
-              rise={deferredRise}
-              run={deferredRun}
-              numRises={deferredNumRises}
-              startSideLeft={deferredStartSideLeft}
-              headspaceCm={200}
-              showLabels={showLabels}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* 2D Plot Section */}
-      <section className="viz-wrap">
-        <div className="viz-card">
-          <div className="svg-shell">
-            <StairProfile2D
-              rise={deferredRise}
-              run={deferredRun}
-              numRises={deferredNumRises}
-              startSideLeft={deferredStartSideLeft}
-            />
           </div>
         </div>
       </section>
