@@ -638,9 +638,9 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     const fov = isPortraitMobile ? 50 : 42;
     const fovRad = THREE.MathUtils.degToRad(fov / 2);
     const fitDistance = sphere.radius > 0 ? sphere.radius / Math.sin(fovRad) : 3;
-    const initialDistance = fitDistance * (isPortraitMobile ? 1.34 : 1.14);
-    const minDistance = Math.max(1.4, fitDistance * (isPortraitMobile ? 0.92 : 0.72));
-    const maxDistance = Math.max(minDistance + 1.0, fitDistance * (isPortraitMobile ? 2.5 : 3.0));
+    const initialDistance = fitDistance * (isPortraitMobile ? 1.3 : 1.14);
+    const minDistance = Math.max(1.15, fitDistance * (isPortraitMobile ? 0.62 : 0.72));
+    const maxDistance = Math.max(minDistance + 0.9, fitDistance * (isPortraitMobile ? 1.7 : 3.0));
 
     return {
       fov,
@@ -715,11 +715,13 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
         makeDefault
         enableDamping
         enablePan={false}
+        enableZoom
         target={[1.25, 1.3, 0]}
         minDistance={cameraFit.minDistance}
         maxDistance={cameraFit.maxDistance}
         zoomSpeed={cameraFit.isPortraitMobile ? 0.72 : 1.0}
         maxPolarAngle={cameraFit.isPortraitMobile ? Math.PI * 0.495 : Math.PI * 0.52}
+        touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
         onChange={reportZoom}
       />
     </>
@@ -736,6 +738,7 @@ export function StairScene(props: StairSceneProps) {
       camera={{ fov: 42, near: 0.1, far: 100, position: [2.6, 2.2, 4.2] }}
       onCreated={({ camera, gl }) => {
         gl.localClippingEnabled = true;
+        gl.domElement.style.touchAction = 'none';
         const current = camera.position.distanceTo(zoomTarget);
         props.onZoomDebugChange?.({ current, min: 1.0, max: 6.5 });
       }}
