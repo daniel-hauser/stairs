@@ -146,7 +146,10 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       canvas.height = fontSize + padY * 2;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(177, 31, 75, 0.96)';
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.96)';
+      ctx.strokeText(text, padX, canvas.height / 2 + 1);
+      ctx.fillStyle = 'rgba(20, 20, 20, 0.96)';
       ctx.font = `500 ${fontSize}px Segoe UI`;
       ctx.textBaseline = 'middle';
       ctx.fillText(text, padX, canvas.height / 2 + 1);
