@@ -14,6 +14,7 @@ interface StairSceneProps {
   numRises: number;
   startSideLeft: boolean;
   headspaceCm: number;
+  showLabels?: boolean;
   onZoomDebugChange?: (zoom: { current: number; min: number; max: number }) => void;
 }
 
@@ -43,7 +44,7 @@ const C = {
 };
 const TRANSPARENT_WALL_COLOR = 0x2f6cc8;
 
-function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, onZoomDebugChange }: StairSceneProps) {
+function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, showLabels = true, onZoomDebugChange }: StairSceneProps) {
   const lastZoomRef = useRef<number>(Number.NaN);
   const { camera } = useThree();
   const minDistance = 2.0;
@@ -579,8 +580,12 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
       root.position.set(1.25 - center.x, -bounds.min.y, -center.z);
     }
 
-    return root;
+    return { root, labelsGroup };
   }, [rise, run, numRises, startSideLeft, headspaceCm]);
+
+  useEffect(() => {
+    stairGroup.labelsGroup.visible = showLabels;
+  }, [showLabels, stairGroup]);
 
   return (
     <>
@@ -601,7 +606,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
       <gridHelper args={[12, 24, C.grid1, C.grid2]} position={[0, 0.001, 0]} />
 
       {/* Dynamic stair geometry — mount raw Three.js group */}
-      <primitive object={stairGroup} />
+      <primitive object={stairGroup.root} />
 
       {/* Camera controls */}
       <OrbitControls

@@ -23,6 +23,7 @@ function App() {
   const [rise, setRise] = useState(STAIR_DEFAULTS.rise)
   const [run, setRun] = useState(STAIR_DEFAULTS.run)
   const [startSideLeft, setStartSideLeft] = useState(STAIR_DEFAULTS.startSideLeft)
+  const [showLabels, setShowLabels] = useState(true)
 
   const deferredRise = useDeferredValue(rise)
   const deferredRun = useDeferredValue(run)
@@ -103,6 +104,14 @@ function App() {
                     L
                   </button>
                 </div>
+                <button
+                  className={`toggle-btn ${showLabels ? 'active' : ''}`}
+                  onClick={() => setShowLabels(v => !v)}
+                  type="button"
+                  title="Toggle measurement labels"
+                >
+                  dim
+                </button>
               </div>
             </div>
             <div className="stat stat-wide">
@@ -178,6 +187,7 @@ function App() {
               numRises={deferredNumRises}
               startSideLeft={deferredStartSideLeft}
               headspaceCm={200}
+              showLabels={showLabels}
             />
           </div>
         </div>
