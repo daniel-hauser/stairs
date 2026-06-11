@@ -4,6 +4,13 @@
 
 React + Three.js stair configurator and 3D/2D visualizer with automated GitHub Pages deployment.
 
+## Browser Baseline
+
+- Target: latest stable Chrome-class browsers.
+- We intentionally use modern web-platform features without legacy fallbacks unless explicitly requested.
+- Current usage includes modern viewport units (`svh/lvh/dvh`), Pointer Events, `color-mix()`, safe-area env vars, and container queries.
+- Tracking audit/task: [Issue #1](https://github.com/daniel-hauser/stairs/issues/1).
+
 ## Repository Layout
 
 - `src/` — Vite + React + TypeScript application source
