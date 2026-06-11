@@ -46,28 +46,8 @@ const TRANSPARENT_WALL_COLOR = 0x2f6cc8;
 
 function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, showLabels = true, onZoomDebugChange }: StairSceneProps) {
   const lastZoomRef = useRef<number>(Number.NaN);
-  const { camera } = useThree();
-  const minDistance = 2.0;
-  const maxDistance = 6.0;
+  const { camera, size } = useThree();
   const zoomTarget = useMemo(() => new THREE.Vector3(1.25, 1.3, 0), []);
-
-  const reportZoom = useCallback(() => {
-    const current = camera.position.distanceTo(zoomTarget);
-    onZoomDebugChange?.({ current, min: minDistance, max: maxDistance });
-  }, [camera, onZoomDebugChange, zoomTarget]);
-
-  useEffect(() => {
-    const id = requestAnimationFrame(() => reportZoom());
-    return () => cancelAnimationFrame(id);
-  }, [reportZoom]);
-
-  useFrame(() => {
-    const current = camera.position.distanceTo(zoomTarget);
-    if (!Number.isFinite(lastZoomRef.current) || Math.abs(current - lastZoomRef.current) > 0.002) {
-      lastZoomRef.current = current;
-      onZoomDebugChange?.({ current, min: minDistance, max: maxDistance });
-    }
-  });
 
   const stairGroup = useMemo(() => {
     const root = new THREE.Group();
@@ -166,7 +146,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       canvas.height = fontSize + padY * 2;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(91, 70, 50, 0.95)';
+      ctx.fillStyle = 'rgba(177, 31, 75, 0.96)';
       ctx.font = `500 ${fontSize}px Segoe UI`;
       ctx.textBaseline = 'middle';
       ctx.fillText(text, padX, canvas.height / 2 + 1);
@@ -204,7 +184,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       addLabel(text, center.x, center.y, center.z);
     };
 
-    const measurementColor = 0x5b4632;
+    const measurementColor = 0xb11f4b;
     const measurementMat = new THREE.LineBasicMaterial({ color: measurementColor });
 
     const addHorizontalDimension = (text: string, x1: number, x2: number, y: number, z: number, lift = 0.06) => {
@@ -645,9 +625,64 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     return { root, labelsGroup };
   }, [rise, run, numRises, startSideLeft, headspaceCm]);
 
+  const cameraFit = useMemo(() => {
+    const bounds = new THREE.Box3().setFromObject(stairGroup.root);
+    const sphere = bounds.getBoundingSphere(new THREE.Sphere());
+    const aspect = size.width / Math.max(1, size.height);
+    const isPortraitMobile = size.width <= 900 && aspect < 1;
+    const fov = isPortraitMobile ? 50 : 42;
+    const fovRad = THREE.MathUtils.degToRad(fov / 2);
+    const fitDistance = sphere.radius > 0 ? sphere.radius / Math.sin(fovRad) : 3;
+    const initialDistance = fitDistance * (isPortraitMobile ? 1.34 : 1.14);
+    const minDistance = Math.max(1.4, fitDistance * (isPortraitMobile ? 0.92 : 0.72));
+    const maxDistance = Math.max(minDistance + 1.0, fitDistance * (isPortraitMobile ? 2.5 : 3.0));
+
+    return {
+      fov,
+      initialDistance,
+      minDistance,
+      maxDistance,
+      isPortraitMobile,
+    };
+  }, [size.height, size.width, stairGroup]);
+
+  useEffect(() => {
+    if ('fov' in camera) {
+      const perspectiveCamera = camera as THREE.PerspectiveCamera;
+      perspectiveCamera.fov = cameraFit.fov;
+      perspectiveCamera.updateProjectionMatrix();
+    }
+
+    // Portrait phones need a farther and slightly higher framing to avoid a too-close feel.
+    const framingDir = cameraFit.isPortraitMobile
+      ? new THREE.Vector3(0.82, 0.72, 1.95)
+      : new THREE.Vector3(1.05, 0.78, 1.45);
+    framingDir.normalize();
+    camera.position.copy(zoomTarget).addScaledVector(framingDir, cameraFit.initialDistance);
+    camera.lookAt(zoomTarget);
+  }, [camera, cameraFit, zoomTarget]);
+
   useEffect(() => {
     stairGroup.labelsGroup.visible = showLabels;
   }, [showLabels, stairGroup]);
+
+  const reportZoom = useCallback(() => {
+    const current = camera.position.distanceTo(zoomTarget);
+    onZoomDebugChange?.({ current, min: cameraFit.minDistance, max: cameraFit.maxDistance });
+  }, [camera, cameraFit.maxDistance, cameraFit.minDistance, onZoomDebugChange, zoomTarget]);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => reportZoom());
+    return () => cancelAnimationFrame(id);
+  }, [reportZoom]);
+
+  useFrame(() => {
+    const current = camera.position.distanceTo(zoomTarget);
+    if (!Number.isFinite(lastZoomRef.current) || Math.abs(current - lastZoomRef.current) > 0.002) {
+      lastZoomRef.current = current;
+      onZoomDebugChange?.({ current, min: cameraFit.minDistance, max: cameraFit.maxDistance });
+    }
+  });
 
   return (
     <>
@@ -676,8 +711,10 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
         enableDamping
         enablePan={false}
         target={[1.25, 1.3, 0]}
-        minDistance={minDistance}
-        maxDistance={maxDistance}
+        minDistance={cameraFit.minDistance}
+        maxDistance={cameraFit.maxDistance}
+        zoomSpeed={cameraFit.isPortraitMobile ? 0.72 : 1.0}
+        maxPolarAngle={cameraFit.isPortraitMobile ? Math.PI * 0.495 : Math.PI * 0.52}
         onChange={reportZoom}
       />
     </>
