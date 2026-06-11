@@ -376,18 +376,39 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     const leftWallOuterLeftX = leftWallTowerEndX - leftWallTowerThicknessX;
 
-    // Per-step horizontal accumulation from the left edge of the inner wall.
-    // Shows +n values at each step/riser station.
-    const stepMeasureZ = STAIR_WIDTH * 0.96;
-    addDimLabel('+0', leftWallOuterLeftX, stairBaseY + 0.03, stepMeasureZ);
+    // Per-step horizontal accumulation from the door reference
+    // (end of transparent wall at ceilingEndX). Drawn on the wall face only.
+    const wallStepMeasureZ = wallWideCenterZ + wallWideSpanZ / 2 - 0.006;
+    const doorRefX = ceilingEndX;
+    const tickHalf = 0.015;
+    const addWallStepOffset = (xFace: number, y: number, label: string) => {
+      const leaderGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(doorRefX, y, wallStepMeasureZ),
+        new THREE.Vector3(xFace, y, wallStepMeasureZ),
+      ]);
+      const startTickGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(doorRefX, y - tickHalf, wallStepMeasureZ),
+        new THREE.Vector3(doorRefX, y + tickHalf, wallStepMeasureZ),
+      ]);
+      const endTickGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(xFace, y - tickHalf, wallStepMeasureZ),
+        new THREE.Vector3(xFace, y + tickHalf, wallStepMeasureZ),
+      ]);
+      dimsGroup.add(new THREE.Line(leaderGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(startTickGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(endTickGeom, measurementMat));
+      addDimLabel(label, (doorRefX + xFace) / 2, y + 0.028, wallStepMeasureZ);
+    };
+
+    addDimLabel('+0 cm', doorRefX + 0.02, stairBaseY + 0.03, wallStepMeasureZ);
     for (let i = 0; i < dynamicCount; i++) {
       const stepFaceX = i * stepAdvance;
-      const fromInnerWallCm = (stepFaceX - leftWallOuterLeftX) / SCALE;
-      const labelY = stairBaseY + (i + 1) * stepRise + 0.035;
-      addDimLabel(`+${fromInnerWallCm.toFixed(0)}`, stepFaceX, labelY, stepMeasureZ);
+      const fromDoorCm = Math.abs(stepFaceX - doorRefX) / SCALE;
+      const y = stairBaseY + (i + 1) * stepRise + 0.01;
+      addWallStepOffset(stepFaceX, y, `+${fromDoorCm.toFixed(0)} cm`);
     }
-    const topStepFromInnerWallCm = (totalRun - leftWallOuterLeftX) / SCALE;
-    addDimLabel(`+${topStepFromInnerWallCm.toFixed(0)}`, totalRun, stairTopY + 0.04, stepMeasureZ);
+    const topStepFromDoorCm = Math.abs(totalRun - doorRefX) / SCALE;
+    addWallStepOffset(totalRun, stairTopY + 0.015, `+${topStepFromDoorCm.toFixed(0)} cm`);
 
     // Vertical: ceiling height from ground and floor-to-floor — placed outside left wall
     const measureLeftX = leftWallOuterLeftX - 0.18;
