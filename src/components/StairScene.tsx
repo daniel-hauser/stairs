@@ -163,6 +163,49 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
       addLabel(text, center.x, center.y, center.z);
     };
 
+    const measurementColor = 0x5b4632;
+    const measurementMat = new THREE.LineBasicMaterial({ color: measurementColor });
+
+    const addHorizontalDimension = (text: string, x1: number, x2: number, y: number, z: number, lift = 0.06) => {
+      const dimensionY = y + lift;
+      const lineGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x1, dimensionY, z),
+        new THREE.Vector3(x2, dimensionY, z),
+      ]);
+      const startTickGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x1, y, z),
+        new THREE.Vector3(x1, dimensionY, z),
+      ]);
+      const endTickGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x2, y, z),
+        new THREE.Vector3(x2, dimensionY, z),
+      ]);
+      root.add(new THREE.Line(lineGeom, measurementMat));
+      root.add(new THREE.Line(startTickGeom, measurementMat));
+      root.add(new THREE.Line(endTickGeom, measurementMat));
+      addLabel(text, (x1 + x2) / 2, dimensionY + 0.05, z);
+    };
+
+    const addVerticalDimension = (text: string, y1: number, y2: number, x: number, z: number, shift = 0.08) => {
+      const dimensionX = x + shift;
+      const lineGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(dimensionX, y1, z),
+        new THREE.Vector3(dimensionX, y2, z),
+      ]);
+      const startTickGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x, y1, z),
+        new THREE.Vector3(dimensionX, y1, z),
+      ]);
+      const endTickGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x, y2, z),
+        new THREE.Vector3(dimensionX, y2, z),
+      ]);
+      root.add(new THREE.Line(lineGeom, measurementMat));
+      root.add(new THREE.Line(startTickGeom, measurementMat));
+      root.add(new THREE.Line(endTickGeom, measurementMat));
+      addLabel(text, dimensionX + 0.03, (y1 + y2) / 2, z);
+    };
+
     // Concrete carrier (flat-faced triangular prism)
     const concreteShape = new THREE.Shape();
     concreteShape.moveTo(0, 0);
@@ -174,6 +217,8 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
     concreteBody.position.set(0, stairBaseY, -innerVolumeWidth / 2);
     root.add(concreteBody);
     addLabelForMesh('concrete carrier', concreteBody, 0.12);
+    addHorizontalDimension(`stairs run ${(totalRun / SCALE).toFixed(0)} cm`, 0, totalRun, stairBaseY, 0, -0.10);
+    addVerticalDimension(`stairs rise ${(totalRise / SCALE).toFixed(1)} cm`, stairBaseY, stairTopY, totalRun, 0, 0.10);
 
     const concreteGapToWall = CFG.dimensions.concreteGapToWallCm * SCALE;
     if (concreteGapToWall > 0) {
@@ -311,6 +356,8 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
     soilLeftBaseSlab.position.set(soilLeftCenterX, slabCenterY, soilUnifiedZ);
     root.add(soilLeftBaseSlab);
     addLabelForMesh('soil slab 35', soilLeftBaseSlab);
+    addVerticalDimension(`soil ${(soilThickness / SCALE).toFixed(0)} cm`, soilLevelY - soilThickness, soilLevelY, leftWallOuterLeftX - 0.08, soilUnifiedDepth * 0.5, -0.06);
+    addVerticalDimension(`slab ${(slabThickness / SCALE).toFixed(0)} cm`, ceilingY, ceilingY + slabThickness, leftWallOuterLeftX - 0.02, soilUnifiedDepth * 0.5, -0.16);
 
     // Transition fill between left wall and sidewall20 start edge.
     const soilBridgeStartX = leftWallOuterLeftX;
@@ -382,6 +429,8 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
     wall50.position.set(holeEndX + topWallLen / 2, wall50Height / 2, 0);
     root.add(wall50);
     addLabelForMesh('wall 50', wall50);
+    addHorizontalDimension(`opening ${(holeWidth / SCALE).toFixed(0)} cm`, ceilingEndX, holeEndX, topFloorY, STAIR_WIDTH * 0.92, 0.10);
+    addHorizontalDimension(`wall ${(topWallLen / SCALE).toFixed(0)} cm`, holeEndX, stairTopX, topFloorY, STAIR_WIDTH * 0.92, 0.20);
 
     const tallWall = new THREE.Mesh(
       new THREE.BoxGeometry(tallWallThicknessX, tallWallHeight, wallWideSpanZ),
@@ -443,6 +492,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, on
       podestGuideRight.position.set(stairTopX, stairTopY + 0.03, STAIR_WIDTH / 2 + 0.05);
       root.add(podestGuideRight);
     }
+    addHorizontalDimension(`podest ${(podestLen / SCALE).toFixed(0)} cm`, totalRun, stairTopX, stairTopY, STAIR_WIDTH * 0.86, 0.08);
 
     addLabelForMesh('podest 80', podest);
 
