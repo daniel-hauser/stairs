@@ -138,8 +138,8 @@ svg {
 .control-section.desktop {
   top: 54px;
   left: 10px;
-  bottom: 10px;
-  width: min(350px, 31vw);
+  width: min(300px, 26vw);
+  max-height: min(60dvh, 520px);
   transform: translateX(calc(-100% - 18px));
   opacity: 0;
   pointer-events: none;
@@ -171,7 +171,9 @@ svg {
 }
 
 .control-section.desktop .stats-card {
-  padding: 6px;
+  height: auto;
+  max-height: min(60dvh, 520px);
+  padding: 4px;
 }
 
 .control-section.mobile .stats-card {
@@ -191,7 +193,7 @@ svg {
 
 .stat {
   background: var(--cp-surface);
-  padding: 6px 8px;
+  padding: 5px 7px;
   border: 1px solid var(--cp-border);
 }
 
@@ -218,9 +220,9 @@ svg {
   background: var(--cp-surface);
   color: var(--cp-text-muted);
   font: inherit;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   line-height: 1.1;
-  padding: 3px 8px;
+  padding: 2px 7px;
   cursor: pointer;
 }
 
@@ -238,14 +240,33 @@ svg {
 .stat .k {
   display: block;
   color: var(--cp-text-muted);
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   margin-bottom: 2px;
 }
 
 .stat .v {
   display: block;
-  font-size: 0.83rem;
+  font-size: 0.8rem;
   font-family: Consolas, "Courier New", Courier, monospace;
+}
+
+.sheet-handle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 4px 0 6px;
+  cursor: ns-resize;
+  touch-action: pan-y;
+}
+
+.sheet-pill {
+  width: 46px;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--cp-text-muted) 52%, transparent);
 }
 
 .stat .v.good {
@@ -308,6 +329,10 @@ input[type="range"] {
 
   .control-section.mobile .stats-card {
     max-height: min(52dvh, 500px);
+  }
+
+  .control-section.mobile.open .stats-card {
+    max-height: min(68dvh, 640px);
   }
 
   .stats-grid {

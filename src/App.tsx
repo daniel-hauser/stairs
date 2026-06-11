@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import './App.css'
 import { StairScene } from './components/StairScene.tsx'
 import { StairProfile2D } from './components/StairProfile2D'
@@ -30,6 +30,7 @@ function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('3d')
   const [isMobile, setIsMobile] = useState<boolean>(() => window.matchMedia(mobileBreakpoint).matches)
   const [controlsOpen, setControlsOpen] = useState<boolean>(() => !window.matchMedia(mobileBreakpoint).matches)
+  const swipeStartY = useRef<number | null>(null)
 
   useEffect(() => {
     const media = window.matchMedia(mobileBreakpoint)
@@ -88,6 +89,22 @@ function App() {
   const riseSafeMin = (STAIR_FORMULA.min - run) / 2
   const riseSafeMax = (STAIR_FORMULA.max - run) / 2
 
+  const handleSheetTouchStart = (event: React.TouchEvent<HTMLButtonElement>) => {
+    swipeStartY.current = event.touches[0]?.clientY ?? null
+  }
+
+  const handleSheetTouchEnd = (event: React.TouchEvent<HTMLButtonElement>) => {
+    if (swipeStartY.current == null) return
+    const endY = event.changedTouches[0]?.clientY ?? swipeStartY.current
+    const deltaY = endY - swipeStartY.current
+    if (deltaY < -22) {
+      setControlsOpen(true)
+    } else if (deltaY > 22) {
+      setControlsOpen(false)
+    }
+    swipeStartY.current = null
+  }
+
   return (
     <main className="app">
       <section className="viewport-stage">
@@ -145,6 +162,18 @@ function App() {
 
       <section className={`control-section ${controlsOpen ? 'open' : ''} ${isMobile ? 'mobile' : 'desktop'}`}>
         <div className="stats-card">
+          {isMobile && (
+            <button
+              type="button"
+              className="sheet-handle"
+              onClick={() => setControlsOpen((v) => !v)}
+              onTouchStart={handleSheetTouchStart}
+              onTouchEnd={handleSheetTouchEnd}
+              aria-label="Expand or collapse controls"
+            >
+              <span className="sheet-pill" />
+            </button>
+          )}
           <div className="stats-grid">
             <div className="stat stat-wide quick-actions">
               <div className="controls-mini">
