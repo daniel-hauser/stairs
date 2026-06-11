@@ -209,6 +209,7 @@ svg {
   padding: 5px 7px;
   border: 1px solid var(--cp-border);
   content-visibility: auto;
+  contain-intrinsic-size: 72px;
 }
 
 .stat.stat-wide {
@@ -403,5 +404,17 @@ input[type="range"] {
 
   .control-section.mobile .stats-card {
     max-height: min(56svh, 540px);
+  }
+}
+
+/* Keep container width authoritative even when media queries also match. */
+@container (max-width: 280px) {
+  .stats-card .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-card .stat.stat-wide,
+  .stats-card .slider-card {
+    grid-column: span 1;
   }
 }
