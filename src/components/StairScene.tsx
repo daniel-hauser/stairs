@@ -756,7 +756,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     const fovRad = THREE.MathUtils.degToRad(fov / 2);
     const fitDistance = sphere.radius > 0 ? sphere.radius / Math.sin(fovRad) : 3;
     const initialDistance = fitDistance * (isPortraitMobile ? 1.3 : 1.14);
-    const minDistance = Math.max(1.15, fitDistance * (isPortraitMobile ? 0.62 : 0.72));
+    const minDistance = Math.max(0.72, fitDistance * (isPortraitMobile ? 0.42 : 0.5));
     const maxDistance = Math.max(minDistance + 0.9, fitDistance * (isPortraitMobile ? 1.7 : 3.0));
 
     return {
