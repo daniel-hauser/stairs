@@ -376,40 +376,6 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     const leftWallOuterLeftX = leftWallTowerEndX - leftWallTowerThicknessX;
 
-    // Per-step horizontal accumulation from the door reference
-    // (end of transparent wall at ceilingEndX). Drawn on the wall face only.
-    const wallStepMeasureZ = wallWideCenterZ + wallWideSpanZ / 2 - 0.006;
-    const doorRefX = ceilingEndX;
-    const tickHalf = 0.015;
-    const addWallStepOffset = (xFace: number, y: number, label: string) => {
-      const leaderGeom = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(doorRefX, y, wallStepMeasureZ),
-        new THREE.Vector3(xFace, y, wallStepMeasureZ),
-      ]);
-      const startTickGeom = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(doorRefX, y - tickHalf, wallStepMeasureZ),
-        new THREE.Vector3(doorRefX, y + tickHalf, wallStepMeasureZ),
-      ]);
-      const endTickGeom = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(xFace, y - tickHalf, wallStepMeasureZ),
-        new THREE.Vector3(xFace, y + tickHalf, wallStepMeasureZ),
-      ]);
-      dimsGroup.add(new THREE.Line(leaderGeom, measurementMat));
-      dimsGroup.add(new THREE.Line(startTickGeom, measurementMat));
-      dimsGroup.add(new THREE.Line(endTickGeom, measurementMat));
-      addDimLabel(label, (doorRefX + xFace) / 2, y + 0.028, wallStepMeasureZ);
-    };
-
-    addDimLabel('+0 cm', doorRefX + 0.02, stairBaseY + 0.03, wallStepMeasureZ);
-    for (let i = 0; i < dynamicCount; i++) {
-      const stepFaceX = i * stepAdvance;
-      const fromDoorCm = Math.abs(stepFaceX - doorRefX) / SCALE;
-      const y = stairBaseY + (i + 1) * stepRise + 0.01;
-      addWallStepOffset(stepFaceX, y, `+${fromDoorCm.toFixed(0)} cm`);
-    }
-    const topStepFromDoorCm = Math.abs(totalRun - doorRefX) / SCALE;
-    addWallStepOffset(totalRun, stairTopY + 0.015, `+${topStepFromDoorCm.toFixed(0)} cm`);
-
     // Vertical: ceiling height from ground and floor-to-floor — placed outside left wall
     const measureLeftX = leftWallOuterLeftX - 0.18;
     addVerticalDimension(`ceiling ${(ceilingY / SCALE).toFixed(0)} cm`, 0, ceilingY, measureLeftX, wallWideCenterZ, -0.10);
@@ -487,6 +453,39 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     sideWall.position.set((sideWallStartX + stairTopX) / 2, slabUndersideY / 2, sideWallCenterZ);
     root.add(sideWall);
     addLabelForMesh('side wall 20 (transparent)', sideWall);
+
+    // Per-step horizontal accumulation from door reference, rendered on transparent right wall.
+    const doorRefX = ceilingEndX;
+    const wallStepMeasureZ = stairRightDescZ - 0.004;
+    const tickHalf = 0.015;
+    const addWallStepOffset = (xFace: number, y: number, label: string) => {
+      const leaderGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(doorRefX, y, wallStepMeasureZ),
+        new THREE.Vector3(xFace, y, wallStepMeasureZ),
+      ]);
+      const startTickGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(doorRefX, y - tickHalf, wallStepMeasureZ),
+        new THREE.Vector3(doorRefX, y + tickHalf, wallStepMeasureZ),
+      ]);
+      const endTickGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(xFace, y - tickHalf, wallStepMeasureZ),
+        new THREE.Vector3(xFace, y + tickHalf, wallStepMeasureZ),
+      ]);
+      dimsGroup.add(new THREE.Line(leaderGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(startTickGeom, measurementMat));
+      dimsGroup.add(new THREE.Line(endTickGeom, measurementMat));
+      addDimLabel(label, (doorRefX + xFace) / 2, y + 0.028, wallStepMeasureZ);
+    };
+
+    addDimLabel('+0 cm', doorRefX + 0.02, stairBaseY + 0.03, wallStepMeasureZ);
+    for (let i = 0; i < dynamicCount; i++) {
+      const stepFaceX = i * stepAdvance;
+      const fromDoorCm = Math.abs(stepFaceX - doorRefX) / SCALE;
+      const y = stairBaseY + (i + 1) * stepRise + 0.01;
+      addWallStepOffset(stepFaceX, y, `+${fromDoorCm.toFixed(0)} cm`);
+    }
+    const topStepFromDoorCm = Math.abs(totalRun - doorRefX) / SCALE;
+    addWallStepOffset(totalRun, stairTopY + 0.015, `+${topStepFromDoorCm.toFixed(0)} cm`);
 
     // Right/top side soil + slab.
     const soilUnifiedStartX = sideWallStartX;
