@@ -258,6 +258,17 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       (isRightTread ? rightCenters : leftCenters).push({ x, y, z: treadZ });
     }
 
+    // Single-step rise + run callouts — use step near the middle for visibility
+    if (dynamicCount >= 2) {
+      const annotIdx = Math.floor(dynamicCount / 2);
+      const stepBottomY = stairBaseY + annotIdx * stepRise;
+      const stepTopY = stepBottomY + stepRise;
+      const stepX = (annotIdx + 1.0) * stepAdvance;
+      const annotZ = HALF_WIDTH + 0.04; // just outside the stair width
+      addVerticalDimension(`rise ${(rise).toFixed(1)} cm`, stepBottomY, stepTopY, stepX - treadRun * 0.5, annotZ, 0.10);
+      addHorizontalDimension(`run ${(treadRun / SCALE).toFixed(1)} cm`, stepX - treadRun / 2, stepX + treadRun / 2, stepBottomY, annotZ, -0.08);
+    }
+
     const addComponentGuide = (points: Array<{ x: number; y: number; z: number }>, color: number) => {
       if (points.length < 2) return;
       const guidePts = points.map((p) => new THREE.Vector3(p.x, p.y + stepRise * 0.58, p.z));
@@ -329,6 +340,13 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     addLabelForMesh('left wall 250h', leftWallTower);
 
     const leftWallOuterLeftX = leftWallTowerEndX - leftWallTowerThicknessX;
+
+    // Vertical: ceiling height from ground and floor-to-floor — placed outside left wall
+    const measureLeftX = leftWallOuterLeftX - 0.18;
+    addVerticalDimension(`ceiling ${(ceilingY / SCALE).toFixed(0)} cm`, 0, ceilingY, measureLeftX, wallWideCenterZ, -0.10);
+    addVerticalDimension(`floor-floor ${(topFloorY / SCALE).toFixed(0)} cm`, 0, topFloorY, measureLeftX, wallWideCenterZ, -0.22);
+    // Vertical: opening clear height (ceiling underside to top floor)
+    addVerticalDimension(`opening ${((topFloorY - ceilingY) / SCALE).toFixed(0)} cm`, ceilingY, topFloorY, measureLeftX, wallWideCenterZ, -0.34);
 
     const slabThickness = CFG.dimensions.slabThicknessCm * SCALE;
     const soilThickness = CFG.dimensions.soilThicknessCm * SCALE;
