@@ -159,7 +159,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       ctx.lineWidth = 4;
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.98)';
       ctx.strokeText(text, padX, canvas.height / 2 + 1);
-      ctx.fillStyle = 'rgba(16, 16, 16, 0.98)';
+      ctx.fillStyle = 'rgba(58, 58, 58, 0.98)';
       ctx.fillText(text, padX, canvas.height / 2 + 1);
 
       const texture = new THREE.CanvasTexture(canvas);
@@ -195,7 +195,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       addLabel(text, center.x, center.y, center.z);
     };
 
-    const measurementColor = 0x101010;
+    const measurementColor = 0x3a3a3a;
     const measurementMat = new THREE.LineBasicMaterial({ color: measurementColor });
 
     const addHorizontalDimension = (text: string, x1: number, x2: number, y: number, z: number, lift = 0.06) => {
