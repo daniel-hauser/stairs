@@ -10,6 +10,16 @@
 - It is acceptable to use modern CSS/JS platform features without fallback unless explicitly requested.
 - Prefer: `svh/dvh/lvh`, `color-mix()`, Pointer Events, `env(safe-area-inset-*)`, modern media/features queries.
 
+## Instruction Maintenance
+- Treat this file as a living source of truth.
+- Whenever project decisions, UX rules, architecture, deployment behavior, or workflow expectations change, update this file in the same PR when practical.
+- If any assistant behavior drifts from these instructions, correct the instructions and implementation together.
+
+## GitHub Communication Format
+- For GitHub-authored text interactions (issue bodies, issue comments, PR bodies, PR comments/replies), prefix content with:
+  - `Copilot on behalf of @daniel-hauser`
+- Keep this prefix rule applied consistently unless explicitly overridden by the user.
+
 ## Core UX Rules
 - 3D is default view.
 - 3D/2D is a toggle; selected view should fill the stage.
