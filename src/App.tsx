@@ -56,6 +56,11 @@ function App() {
   // Calculate derived values
   const totalRise = rise * numRises
   const totalRun = (run / 2) * numRises
+  const targetRiseToFloor = 289 - rise
+  const riseResidual = totalRise - targetRiseToFloor
+  const entryRise = Math.max(rise * 0.35, Math.min(rise * 1.45, rise - riseResidual))
+  const floorRise = totalRise + entryRise
+  const floorDelta = floorRise - 289
   const slope = Math.atan2(totalRise, totalRun) * (180 / Math.PI)
   const formula = 2 * rise + run
   const formulaStatus = formula >= STAIR_FORMULA.min && formula <= STAIR_FORMULA.max ? 'good' : formula > STAIR_FORMULA.max ? 'warn' : 'bad'
@@ -257,6 +262,10 @@ function App() {
               <span className="v">{totalRise.toFixed(1)} cm</span>
             </div>
             <div className="stat">
+              <span className="k">Rise to floor</span>
+              <span className="v">{floorRise.toFixed(1)} cm</span>
+            </div>
+            <div className="stat">
               <span className="k">Total run</span>
               <span className="v">{totalRun.toFixed(1)} cm</span>
             </div>
@@ -275,6 +284,12 @@ function App() {
             <div className="stat">
               <span className="k">Concrete volume</span>
               <span className="v">{concreteVolume.toFixed(3)} m3</span>
+            </div>
+            <div className="stat">
+              <span className="k">Floor mismatch (Δ)</span>
+              <span className={`v ${Math.abs(floorDelta) > 0.15 ? 'warn' : 'good'}`}>
+                {floorDelta >= 0 ? '+' : ''}{floorDelta.toFixed(1)} cm
+              </span>
             </div>
           </div>
         </div>

@@ -63,7 +63,10 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     const topFloorY = TOP_FLOOR_RISE * SCALE;
     const ceilingY = CEILING_RISE * SCALE;
-    const fixedTopEntryDrop = stepRise;
+    const targetRiseToFloor = (TOP_FLOOR_RISE - rise) * SCALE;
+    const riseResidual = totalRise - targetRiseToFloor;
+    // Allow partial under-floor behavior by carrying residual into the top entry drop.
+    const fixedTopEntryDrop = THREE.MathUtils.clamp(stepRise - riseResidual, stepRise * 0.35, stepRise * 1.45);
     const stairTopY = topFloorY - fixedTopEntryDrop;
     const stairBaseY = stairTopY - totalRise;
 
@@ -507,7 +510,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     }
 
     // Fixed top stair / podest 50+30.
-    const podestHeight = stepRise;
+    const podestHeight = fixedTopEntryDrop;
     const podest = new THREE.Mesh(
       new THREE.BoxGeometry(podestLen, podestHeight, STAIR_WIDTH),
       new THREE.MeshStandardMaterial({
@@ -544,12 +547,23 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     addLabelForMesh('podest 80', podest);
 
+    addVerticalDimension(`entry rise ${(fixedTopEntryDrop / SCALE).toFixed(1)} cm`, stairTopY, topFloorY, stairTopX, STAIR_WIDTH * 0.86, 0.10);
+    if (Math.abs(fixedTopEntryDrop - stepRise) > 0.005) {
+      const deltaCm = (fixedTopEntryDrop - stepRise) / SCALE;
+      addDimLabel(
+        `Δ floor ${deltaCm >= 0 ? '+' : ''}${deltaCm.toFixed(1)} cm`,
+        stairTopX + 0.12,
+        topFloorY + 0.06,
+        STAIR_WIDTH * 0.84,
+      );
+    }
+
     const headspaceHeight = headspaceCm * SCALE;
     const headspaceDepth = innerVolumeWidth;
     // Measure from the stair-face line (top of riser / nosing trajectory),
     // while keeping a straight envelope to represent smooth head movement.
     const headspaceBottomLeftY = stairBaseY + stepRise;
-    const headspaceBottomRightY = stairTopY + stepRise;
+    const headspaceBottomRightY = stairTopY + fixedTopEntryDrop;
     const headspaceTopLeftY = headspaceBottomLeftY + headspaceHeight;
     const headspaceTopRightY = headspaceBottomRightY + headspaceHeight;
     const headspaceSlope = totalRun > 0 ? totalRise / totalRun : 0;
@@ -586,6 +600,26 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     );
     headspaceEdges.position.set(0, 0, -headspaceDepth / 2);
     root.add(headspaceEdges);
+
+    // Floor/podest segment of headspace so the full movement envelope is visible.
+    const floorHeadspaceShape = new THREE.Shape();
+    floorHeadspaceShape.moveTo(totalRun, topFloorY);
+    floorHeadspaceShape.lineTo(stairTopX, topFloorY);
+    floorHeadspaceShape.lineTo(stairTopX, topFloorY + headspaceHeight);
+    floorHeadspaceShape.lineTo(totalRun, topFloorY + headspaceHeight);
+    floorHeadspaceShape.closePath();
+
+    const floorHeadspaceGeom = new THREE.ExtrudeGeometry(floorHeadspaceShape, {
+      depth: headspaceDepth,
+      bevelEnabled: false,
+    });
+    const floorHeadspaceEdges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(floorHeadspaceGeom),
+      new THREE.LineBasicMaterial({ color: 0xff4444 }),
+    );
+    floorHeadspaceEdges.position.set(0, 0, -headspaceDepth / 2);
+    root.add(floorHeadspaceEdges);
+
     addLabel(`headspace ${headspaceCm.toFixed(0)} cm`, totalRun * 0.52, Math.min(soilLevelY, headspaceTopRightY) + 0.08, STAIR_WIDTH * 0.8);
 
     const slabIntersectStartX = Math.max(0, leftWallOuterLeftX);
