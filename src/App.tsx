@@ -47,8 +47,10 @@ function App() {
   // Calculate derived values
   const totalRise = rise * numRises
   const totalRun = (run / 2) * numRises
+  const targetRiseToFloor = 289 - rise
+  const partialBottomRise = Math.max(0, targetRiseToFloor - totalRise)
   const entryRise = rise
-  const floorRise = totalRise + entryRise
+  const floorRise = totalRise + partialBottomRise + entryRise
   const floorDelta = floorRise - 289
   const slope = Math.atan2(totalRise, totalRun) * (180 / Math.PI)
   const formula = 2 * rise + run
@@ -278,6 +280,12 @@ function App() {
               <span className="k">Floor mismatch (Δ)</span>
               <span className={`v ${Math.abs(floorDelta) > 0.15 ? 'warn' : 'good'}`}>
                 {floorDelta >= 0 ? '+' : ''}{floorDelta.toFixed(1)} cm
+              </span>
+            </div>
+            <div className="stat">
+              <span className="k">Partial bottom rise</span>
+              <span className={`v ${partialBottomRise > 0.15 ? 'warn' : 'good'}`}>
+                {partialBottomRise > 0.01 ? `+${partialBottomRise.toFixed(1)} cm` : 'none'}
               </span>
             </div>
           </div>

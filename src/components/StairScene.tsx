@@ -69,6 +69,8 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     const riseResidual = totalRise - targetRiseToFloor;
     // Keep construction pinned from top floor through a fixed rise-high podest, then down.
     const fixedTopEntryDrop = stepRise;
+    const partialBottomRise = THREE.MathUtils.clamp(-riseResidual, 0, stepRise);
+    const hasPartialBottomStep = partialBottomRise > 0.005;
     const underFloorMismatch = riseResidual > 0.005;
     const stairTopY = topFloorY - fixedTopEntryDrop;
     const stairBaseY = stairTopY - totalRise;
@@ -81,6 +83,15 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     });
     const stairLeftMat = new THREE.MeshStandardMaterial({
       color: C.stairLeft, metalness: 0.05, roughness: 0.55, transparent: true, opacity: 0.9,
+    });
+    const partialStepMat = new THREE.MeshStandardMaterial({
+      color: 0xffa24a,
+      emissive: 0x3a1f02,
+      emissiveIntensity: 0.6,
+      metalness: 0.05,
+      roughness: 0.6,
+      transparent: true,
+      opacity: 0.92,
     });
     const stairEdgeMat = new THREE.LineBasicMaterial({ color: C.stairEdge });
     const concreteMat = new THREE.MeshStandardMaterial({
@@ -291,6 +302,25 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       const riserTopY = stairBaseY + (i + 1) * stepRise;
       addDimLabel(`+${((i + 1) * rise).toFixed(1)}`, riserFaceX, riserTopY + 0.012, treadZ);
       (isRightTread ? rightCenters : leftCenters).push({ x, y, z: treadZ });
+    }
+
+    if (hasPartialBottomStep) {
+      const partialOriginIndex = dynamicCount;
+      const partialOnRight = sideAtOriginStep(partialOriginIndex);
+      const partialZ = partialOnRight ? -HALF_WIDTH / 2 : HALF_WIDTH / 2;
+      const partialStep = new THREE.Mesh(
+        new THREE.BoxGeometry(treadRun + eps, partialBottomRise + eps, HALF_WIDTH),
+        partialStepMat,
+      );
+      partialStep.position.set(0, partialBottomRise / 2, partialZ);
+      root.add(partialStep);
+
+      const partialEdge = new THREE.LineSegments(new THREE.EdgesGeometry(partialStep.geometry), stairEdgeMat);
+      partialEdge.position.copy(partialStep.position);
+      root.add(partialEdge);
+
+      addDimLabel(`partial +${(partialBottomRise / SCALE).toFixed(1)} cm`, 0, partialBottomRise + 0.03, partialZ);
+      (partialOnRight ? rightCenters : leftCenters).unshift({ x: 0, y: partialBottomRise / 2, z: partialZ });
     }
 
     // Single-step rise + run callouts — use step near the middle for visibility
@@ -585,6 +615,9 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     if (underFloorMismatch) {
       addDimLabel('INVALID: stairs under floor', totalRun * 0.58, topFloorY + 0.14, STAIR_WIDTH * 0.9);
+    }
+    if (hasPartialBottomStep) {
+      addDimLabel('WARNING: partial bottom step', totalRun * 0.24, 0.16, STAIR_WIDTH * 0.88);
     }
 
     addVerticalDimension(`entry rise ${(fixedTopEntryDrop / SCALE).toFixed(1)} cm`, stairTopY, topFloorY, stairTopX, STAIR_WIDTH * 0.86, 0.10);
