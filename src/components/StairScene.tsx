@@ -602,11 +602,13 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     root.add(headspaceEdges);
 
     // Lower-floor continuation of headspace (like a zero-height podest at the bottom).
+    // Must start from actual floor level, not from the first step top.
     const lowerFloorLen = podestLen;
-    const lowerTopY = topLeftClippedY;
+    const lowerFloorY = stairBaseY;
+    const lowerTopY = Math.min(soilLevelY, lowerFloorY + headspaceHeight);
     const floorHeadspaceShape = new THREE.Shape();
-    floorHeadspaceShape.moveTo(-lowerFloorLen, headspaceBottomLeftY);
-    floorHeadspaceShape.lineTo(0, headspaceBottomLeftY);
+    floorHeadspaceShape.moveTo(-lowerFloorLen, lowerFloorY);
+    floorHeadspaceShape.lineTo(0, lowerFloorY);
     floorHeadspaceShape.lineTo(0, lowerTopY);
     floorHeadspaceShape.lineTo(-lowerFloorLen, lowerTopY);
     floorHeadspaceShape.closePath();
