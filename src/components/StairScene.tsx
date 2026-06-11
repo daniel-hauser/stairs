@@ -546,8 +546,10 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     const headspaceHeight = headspaceCm * SCALE;
     const headspaceDepth = innerVolumeWidth;
-    const headspaceBottomLeftY = stairBaseY;
-    const headspaceBottomRightY = stairTopY;
+    // Measure from the stair-face line (top of riser / nosing trajectory),
+    // while keeping a straight envelope to represent smooth head movement.
+    const headspaceBottomLeftY = stairBaseY + stepRise;
+    const headspaceBottomRightY = stairTopY + stepRise;
     const headspaceTopLeftY = headspaceBottomLeftY + headspaceHeight;
     const headspaceTopRightY = headspaceBottomRightY + headspaceHeight;
     const headspaceSlope = totalRun > 0 ? totalRise / totalRun : 0;
