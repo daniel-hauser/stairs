@@ -265,12 +265,6 @@ svg {
   font-family: Consolas, "Courier New", Courier, monospace;
 }
 
-.stepper-row {
-  display: inline-flex;
-  gap: 4px;
-  margin-top: 4px;
-}
-
 .slider-inline {
   margin-top: 6px;
   display: grid;
@@ -308,23 +302,29 @@ svg {
   background: var(--cp-accent-soft);
 }
 
-.mini-step-btn {
-  appearance: none;
-  border: 1px solid var(--cp-border);
-  background: var(--cp-surface-soft);
-  color: var(--cp-text);
-  font: inherit;
-  font-size: 0.68rem;
-  line-height: 1;
-  width: 20px;
-  height: 18px;
-  padding: 0;
-  cursor: pointer;
-}
-
-.mini-step-btn:disabled {
+.slider-step-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.stepper-buttons {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 20px;
+  gap: 0;
+  align-items: center;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-soft);
+  overflow: hidden;
+}
+
+.stepper-display {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-left: 1px solid var(--cp-border);
+  border-right: 1px solid var(--cp-border);
+  padding: 0 4px;
 }
 
 .sheet-handle {

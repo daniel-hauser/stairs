@@ -3,6 +3,7 @@ import './App.css'
 import { StairScene } from './components/StairScene.tsx'
 import { StairProfile2D } from './components/StairProfile2D'
 import { SliderWithStepper } from './components/SliderWithStepper.tsx'
+import { StepCounter } from './components/StepCounter.tsx'
 import { STAIR_DEFAULTS, STAIR_FORMULA } from './constants/stairDefaults'
 
 type ViewMode = '3d' | '2d'
@@ -336,11 +337,14 @@ function App() {
             </div>
             <div className="stat">
               <span className="k">Rises / pairs</span>
-              <span className="v">{numRises} / {Math.ceil(numRises / 2)}</span>
-              <div className="stepper-row">
-                <button className="mini-step-btn" type="button" onClick={() => adjustStepCount(-1)} disabled={!canStepDown}>-</button>
-                <button className="mini-step-btn" type="button" onClick={() => adjustStepCount(1)} disabled={!canStepUp}>+</button>
-              </div>
+              <StepCounter
+                steps={numRises}
+                pairs={Math.ceil(numRises / 2)}
+                onDecrease={() => adjustStepCount(-1)}
+                onIncrease={() => adjustStepCount(1)}
+                canDecrease={canStepDown}
+                canIncrease={canStepUp}
+              />
             </div>
             <div className="stat">
               <span className="k">Concrete volume</span>
