@@ -720,18 +720,17 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
 
     addLabel(`headspace ${headspaceCm.toFixed(0)} cm`, totalRun * 0.52, Math.min(soilLevelY, headspaceTopRightY) + 0.08, STAIR_WIDTH * 0.8);
 
-    // Draw the deck as a 4cm thick visual slab
+    // Draw the deck as a 4cm thick visual slab at the top landing
     const deckThickness = 0.04;
-    const deckBottomY = soilLevelY - deckThickness;
-    const xAtDeckBottom = headspaceSlope > 0 ? (deckBottomY - headspaceTopLeftY) / headspaceSlope : leftWallOuterLeftX;
-    const deckVisualStartX = THREE.MathUtils.clamp(xAtDeckBottom, leftWallOuterLeftX, totalRun);
+    const deckTopY = stairTopY;
+    const deckBottomY = deckTopY - deckThickness;
     
     // Create deck geometry (4cm thick rectangle)
     const deckShape = new THREE.Shape();
-    deckShape.moveTo(deckVisualStartX, soilLevelY);
-    deckShape.lineTo(totalRun, soilLevelY);
+    deckShape.moveTo(0, deckTopY);
+    deckShape.lineTo(totalRun, deckTopY);
     deckShape.lineTo(totalRun, deckBottomY);
-    deckShape.lineTo(deckVisualStartX, deckBottomY);
+    deckShape.lineTo(0, deckBottomY);
     deckShape.closePath();
     
     const deckGeom = new THREE.ShapeGeometry(deckShape);
@@ -756,10 +755,10 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
     const slabIntersectStartX = Math.max(0, leftWallOuterLeftX);
     const slabIntersectEndX = Math.min(totalRun, ceilingEndX);
     const xAtCeiling = headspaceSlope > 0 ? (ceilingY - headspaceTopLeftY) / headspaceSlope : slabIntersectStartX;
-    const usefulDeckWidthCm = Math.max(0, (totalRun - deckVisualStartX) / SCALE);
+    const deckWidthCm = (totalRun / SCALE);
     const soilFaceZ = soilUnifiedZ + soilUnifiedDepth / 2 - 0.01;
     // Show deck dimensions
-    addHorizontalDimension(`deck: 4 cm thick  •  ${usefulDeckWidthCm.toFixed(1)} cm wide`, deckVisualStartX, totalRun, deckBottomY, soilFaceZ, 0.06);
+    addHorizontalDimension(`deck: 4 cm thick  •  ${deckWidthCm.toFixed(1)} cm wide`, 0, totalRun, deckBottomY, soilFaceZ, 0.06);
 
     if (slabIntersectEndX > slabIntersectStartX) {
       const overlapStartX = Math.max(slabIntersectStartX, xAtCeiling);
