@@ -3,7 +3,7 @@ import './App.css'
 import { StairScene } from './components/StairScene.tsx'
 import { StairProfile2D } from './components/StairProfile2D'
 import { SliderCard } from './components/SliderCard.tsx'
-import { StepCounter } from './components/StepCounter.tsx'
+import { StepCounterCard } from './components/StepCounterCard.tsx'
 import { STAIR_DEFAULTS, STAIR_FORMULA } from './constants/stairDefaults'
 
 type ViewMode = '3d' | '2d'
@@ -327,17 +327,15 @@ function App() {
               <span className="k">Stair formula (2R+T)</span>
               <span className={`v ${formulaStatus}`}>{formulaLabel}</span>
             </div>
-            <div className="stat">
-              <span className="k">Rises / pairs</span>
-              <StepCounter
-                steps={numRises}
-                pairs={Math.ceil(numRises / 2)}
-                onDecrease={() => adjustStepCount(-1)}
-                onIncrease={() => adjustStepCount(1)}
-                canDecrease={canStepDown}
-                canIncrease={canStepUp}
-              />
-            </div>
+            <StepCounterCard
+              label="Rises / pairs"
+              steps={numRises}
+              pairs={Math.ceil(numRises / 2)}
+              onDecrease={() => adjustStepCount(-1)}
+              onIncrease={() => adjustStepCount(1)}
+              canDecrease={canStepDown}
+              canIncrease={canStepUp}
+            />
             <div className="stat">
               <span className="k">Concrete volume</span>
               <span className="v">{concreteVolume.toFixed(3)} m3</span>
