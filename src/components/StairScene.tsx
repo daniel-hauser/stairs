@@ -726,11 +726,10 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
     const deckThickness = 0.04; // 4 cm deck clearance check
     const deckCheckY = topFloorY - deckThickness;
     const xAtDeckCheck = headspaceSlope > 0 ? (deckCheckY - headspaceTopLeftY) / headspaceSlope : slabIntersectStartX;
-    if (xAtDeckCheck < ceilingEndX && xAtDeckCheck > slabIntersectStartX) {
-      const usefulTopAreaCm = (ceilingEndX - xAtDeckCheck) / SCALE;
-      const soilFaceZ = soilUnifiedZ + soilUnifiedDepth / 2 - 0.01;
-      addHorizontalDimension(`useful top area (deck 4cm) ${usefulTopAreaCm.toFixed(1)} cm`, xAtDeckCheck, ceilingEndX, deckCheckY, soilFaceZ, 0.08);
-    }
+    const deckStartX = THREE.MathUtils.clamp(xAtDeckCheck, slabIntersectStartX, ceilingEndX);
+    const usefulTopAreaCm = Math.max(0, (ceilingEndX - deckStartX) / SCALE);
+    const soilFaceZ = soilUnifiedZ + soilUnifiedDepth / 2 - 0.01;
+    addHorizontalDimension(`useful deck (4cm) ${usefulTopAreaCm.toFixed(1)} cm`, deckStartX, ceilingEndX, topFloorY, soilFaceZ, 0.06);
 
     if (slabIntersectEndX > slabIntersectStartX) {
       const overlapStartX = Math.max(slabIntersectStartX, xAtCeiling);

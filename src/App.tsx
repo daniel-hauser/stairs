@@ -2,6 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState, type CSSPropert
 import './App.css'
 import { StairScene } from './components/StairScene.tsx'
 import { StairProfile2D } from './components/StairProfile2D'
+import { SliderWithStepper } from './components/SliderWithStepper.tsx'
 import { STAIR_DEFAULTS, STAIR_FORMULA } from './constants/stairDefaults'
 
 type ViewMode = '3d' | '2d'
@@ -249,72 +250,58 @@ function App() {
 
             <div className="stat slider-card">
               <span className="k">Individual rise ({rise.toFixed(2)} cm)</span>
-              <div className="slider-inline">
-                <button className="slider-step-btn" type="button" onClick={() => adjustRise(-0.5)}>-</button>
-                <input
-                  className="range-safe slider-track"
-                  style={rangeStyle(15, 27, riseSafeMin, riseSafeMax)}
-                  type="range"
-                  min="15"
-                  max="27"
-                  step="0.5"
-                  value={rise}
-                  onChange={(e) => setRise(parseFloat(e.target.value))}
-                />
-                <button className="slider-step-btn" type="button" onClick={() => adjustRise(0.5)}>+</button>
-              </div>
+              <SliderWithStepper
+                min={15}
+                max={27}
+                step={0.5}
+                value={rise}
+                onChange={setRise}
+                onDecrease={() => adjustRise(-0.5)}
+                onIncrease={() => adjustRise(0.5)}
+                inputClassName="range-safe slider-track"
+                inputStyle={rangeStyle(15, 27, riseSafeMin, riseSafeMax)}
+              />
             </div>
 
             <div className="stat slider-card">
               <span className="k">Usable tread run (L/R) ({run.toFixed(2)} cm)</span>
-              <div className="slider-inline">
-                <button className="slider-step-btn" type="button" onClick={() => adjustRun(-0.5)}>-</button>
-                <input
-                  className="range-safe slider-track"
-                  style={rangeStyle(20, 30, runSafeMin, runSafeMax)}
-                  type="range"
-                  min="20"
-                  max="30"
-                  step="0.5"
-                  value={run}
-                  onChange={(e) => setRun(parseFloat(e.target.value))}
-                />
-                <button className="slider-step-btn" type="button" onClick={() => adjustRun(0.5)}>+</button>
-              </div>
+              <SliderWithStepper
+                min={20}
+                max={30}
+                step={0.5}
+                value={run}
+                onChange={setRun}
+                onDecrease={() => adjustRun(-0.5)}
+                onIncrease={() => adjustRun(0.5)}
+                inputClassName="range-safe slider-track"
+                inputStyle={rangeStyle(20, 30, runSafeMin, runSafeMax)}
+              />
             </div>
 
             <div className="stat slider-card">
               <span className="k">Top podest rise ({topPodestRise.toFixed(2)} cm)</span>
-              <div className="slider-inline">
-                <button className="slider-step-btn" type="button" onClick={() => adjustTopPodestRise(-0.5)}>-</button>
-                <input
-                  className="slider-track"
-                  type="range"
-                  min="10"
-                  max="35"
-                  step="0.5"
-                  value={topPodestRise}
-                  onChange={(e) => setTopPodestRise(parseFloat(e.target.value))}
-                />
-                <button className="slider-step-btn" type="button" onClick={() => adjustTopPodestRise(0.5)}>+</button>
-              </div>
+              <SliderWithStepper
+                min={10}
+                max={35}
+                step={0.5}
+                value={topPodestRise}
+                onChange={setTopPodestRise}
+                onDecrease={() => adjustTopPodestRise(-0.5)}
+                onIncrease={() => adjustTopPodestRise(0.5)}
+              />
             </div>
 
             <div className="stat slider-card">
               <span className="k">Bottom podest ({bottomPodestHeight.toFixed(2)} cm)</span>
-              <div className="slider-inline">
-                <button className="slider-step-btn" type="button" onClick={() => adjustBottomPodest(-0.5)}>-</button>
-                <input
-                  className="slider-track"
-                  type="range"
-                  min="0"
-                  max="40"
-                  step="0.5"
-                  value={bottomPodestHeight}
-                  onChange={(e) => setBottomPodestHeight(parseFloat(e.target.value))}
-                />
-                <button className="slider-step-btn" type="button" onClick={() => adjustBottomPodest(0.5)}>+</button>
-              </div>
+              <SliderWithStepper
+                min={0}
+                max={40}
+                step={0.5}
+                value={bottomPodestHeight}
+                onChange={setBottomPodestHeight}
+                onDecrease={() => adjustBottomPodest(-0.5)}
+                onIncrease={() => adjustBottomPodest(0.5)}
+              />
             </div>
 
             <div className="stat">
