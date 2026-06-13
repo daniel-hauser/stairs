@@ -2,7 +2,9 @@
  * Default stair design parameters
  */
 export const STAIR_DEFAULTS = {
-  rise: 18.0, // cm - Individual rise height (balanced with floor alignment)
+  rise: 18.0, // cm - Individual rise height (flight steps)
+  topPodestRise: 19.0, // cm - Entry rise from top floor to top podest
+  bottomPodestHeight: 0.0, // cm - Optional raised bottom podest
   run: 26.0, // cm - Usable tread run tuned for 2R+T comfort band center
   totalRise: 270.0, // cm - Total vertical distance
   numRises: 15,

@@ -265,6 +265,26 @@ svg {
   font-family: Consolas, "Courier New", Courier, monospace;
 }
 
+.stepper-row {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.mini-step-btn {
+  appearance: none;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-soft);
+  color: var(--cp-text);
+  font: inherit;
+  font-size: 0.68rem;
+  line-height: 1;
+  width: 20px;
+  height: 18px;
+  padding: 0;
+  cursor: pointer;
+}
+
 .sheet-handle {
   display: flex;
   justify-content: center;

@@ -10,6 +10,8 @@ import { GEOMETRY_CONFIG } from '../constants/geometryConfig';
 
 interface StairSceneProps {
   rise: number;
+  topPodestRise: number;
+  bottomPodestHeight: number;
   run: number;
   numRises: number;
   startSideLeft: boolean;
@@ -44,7 +46,7 @@ const C = {
 };
 const TRANSPARENT_WALL_COLOR = 0x2f6cc8;
 
-function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, showLabels = true, onZoomDebugChange }: StairSceneProps) {
+function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRises, startSideLeft, headspaceCm, showLabels = true, onZoomDebugChange }: StairSceneProps) {
   const lastZoomRef = useRef<number>(Number.NaN);
   const didAutoFrameRef = useRef(false);
   const lastPortraitModeRef = useRef<boolean | null>(null);
@@ -65,10 +67,11 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     const topFloorY = TOP_FLOOR_RISE * SCALE;
     const ceilingY = CEILING_RISE * SCALE;
-    const targetRiseToFloor = (TOP_FLOOR_RISE - rise) * SCALE;
+    const targetRiseToFloor = Math.max(0, TOP_FLOOR_RISE - topPodestRise - bottomPodestHeight) * SCALE;
     const riseResidual = totalRise - targetRiseToFloor;
     // Keep construction pinned from top floor through a fixed rise-high podest, then down.
-    const fixedTopEntryDrop = stepRise;
+    const fixedTopEntryDrop = topPodestRise * SCALE;
+    const bottomPodestTopY = bottomPodestHeight * SCALE;
     const partialBottomRise = THREE.MathUtils.clamp(-riseResidual, 0, stepRise);
     const hasPartialBottomStep = partialBottomRise > 0.005;
     const underFloorMismatch = riseResidual > 0.005;
@@ -312,15 +315,15 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
         new THREE.BoxGeometry(treadRun + eps, partialBottomRise + eps, HALF_WIDTH),
         partialStepMat,
       );
-      partialStep.position.set(0, partialBottomRise / 2, partialZ);
+      partialStep.position.set(0, bottomPodestTopY + partialBottomRise / 2, partialZ);
       root.add(partialStep);
 
       const partialEdge = new THREE.LineSegments(new THREE.EdgesGeometry(partialStep.geometry), stairEdgeMat);
       partialEdge.position.copy(partialStep.position);
       root.add(partialEdge);
 
-      addDimLabel(`partial +${(partialBottomRise / SCALE).toFixed(1)} cm`, 0, partialBottomRise + 0.03, partialZ);
-      (partialOnRight ? rightCenters : leftCenters).unshift({ x: 0, y: partialBottomRise / 2, z: partialZ });
+      addDimLabel(`partial +${(partialBottomRise / SCALE).toFixed(1)} cm`, 0, bottomPodestTopY + partialBottomRise + 0.03, partialZ);
+      (partialOnRight ? rightCenters : leftCenters).unshift({ x: 0, y: bottomPodestTopY + partialBottomRise / 2, z: partialZ });
     }
 
     // Single-step rise + run callouts — use step near the middle for visibility
@@ -576,6 +579,20 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     }
 
     // Fixed top stair / podest 50+30.
+    if (bottomPodestTopY > 0.001) {
+      const bottomPodest = new THREE.Mesh(
+        new THREE.BoxGeometry(podestLen, bottomPodestTopY, STAIR_WIDTH),
+        new THREE.MeshStandardMaterial({
+          color: 0x8a7967,
+          roughness: 0.88,
+          metalness: 0.03,
+        }),
+      );
+      bottomPodest.position.set(-podestLen / 2, bottomPodestTopY / 2, 0);
+      root.add(bottomPodest);
+      addLabelForMesh('bottom podest', bottomPodest);
+    }
+
     const podestHeight = fixedTopEntryDrop;
     const podest = new THREE.Mesh(
       new THREE.BoxGeometry(podestLen, podestHeight, STAIR_WIDTH),
@@ -617,7 +634,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
       addDimLabel('INVALID: stairs under floor', totalRun * 0.58, topFloorY + 0.14, STAIR_WIDTH * 0.9);
     }
     if (hasPartialBottomStep) {
-      addDimLabel('WARNING: partial bottom step', totalRun * 0.24, 0.16, STAIR_WIDTH * 0.88);
+      addDimLabel('WARNING: partial bottom step', totalRun * 0.24, bottomPodestTopY + 0.16, STAIR_WIDTH * 0.88);
     }
 
     addVerticalDimension(`entry rise ${(fixedTopEntryDrop / SCALE).toFixed(1)} cm`, stairTopY, topFloorY, stairTopX, STAIR_WIDTH * 0.86, 0.10);
@@ -679,7 +696,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     // follows the same linear envelope behavior.
     const lowerFloorLen = podestLen;
     const lowerFloorX = -lowerFloorLen;
-    const lowerFloorY = stairBaseY;
+    const lowerFloorY = bottomPodestTopY;
     const lowerBottomAtStairY = headspaceBottomLeftY;
     const lowerTopAtFloorY = Math.min(soilLevelY, lowerFloorY + headspaceHeight);
     const lowerTopAtStairY = Math.min(soilLevelY, topLeftClippedY);
@@ -705,8 +722,14 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
 
     const slabIntersectStartX = Math.max(0, leftWallOuterLeftX);
     const slabIntersectEndX = Math.min(totalRun, ceilingEndX);
+    const xAtCeiling = headspaceSlope > 0 ? (ceilingY - headspaceTopLeftY) / headspaceSlope : slabIntersectStartX;
+    if (xAtCeiling < ceilingEndX && xAtCeiling > slabIntersectStartX) {
+      const edgeToHeadCm = (ceilingEndX - xAtCeiling) / SCALE;
+      const soilFaceZ = soilUnifiedZ + soilUnifiedDepth / 2 - 0.01;
+      addHorizontalDimension(`hole→head ${edgeToHeadCm.toFixed(1)} cm`, xAtCeiling, ceilingEndX, ceilingY, soilFaceZ, 0.10);
+    }
+
     if (slabIntersectEndX > slabIntersectStartX) {
-      const xAtCeiling = headspaceSlope > 0 ? (ceilingY - headspaceTopLeftY) / headspaceSlope : slabIntersectStartX;
       const overlapStartX = Math.max(slabIntersectStartX, xAtCeiling);
       if (slabIntersectEndX > overlapStartX) {
         const overlapShape = new THREE.Shape();
@@ -745,7 +768,7 @@ function StairSceneContent({ rise, run, numRises, startSideLeft, headspaceCm, sh
     }
 
     return { root, labelsGroup };
-  }, [rise, run, numRises, startSideLeft, headspaceCm]);
+  }, [rise, topPodestRise, bottomPodestHeight, run, numRises, startSideLeft, headspaceCm]);
 
   const cameraFit = useMemo(() => {
     const bounds = new THREE.Box3().setFromObject(stairGroup.root);
