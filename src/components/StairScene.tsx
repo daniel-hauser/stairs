@@ -720,14 +720,46 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
 
     addLabel(`headspace ${headspaceCm.toFixed(0)} cm`, totalRun * 0.52, Math.min(soilLevelY, headspaceTopRightY) + 0.08, STAIR_WIDTH * 0.8);
 
+    // Draw the deck as a 4cm thick visual slab
+    const deckThickness = 0.04;
+    const deckBottomY = soilLevelY - deckThickness;
+    const xAtDeckBottom = headspaceSlope > 0 ? (deckBottomY - headspaceTopLeftY) / headspaceSlope : leftWallOuterLeftX;
+    const deckVisualStartX = THREE.MathUtils.clamp(xAtDeckBottom, leftWallOuterLeftX, totalRun);
+    
+    // Create deck geometry (4cm thick rectangle)
+    const deckShape = new THREE.Shape();
+    deckShape.moveTo(deckVisualStartX, soilLevelY);
+    deckShape.lineTo(totalRun, soilLevelY);
+    deckShape.lineTo(totalRun, deckBottomY);
+    deckShape.lineTo(deckVisualStartX, deckBottomY);
+    deckShape.closePath();
+    
+    const deckGeom = new THREE.ShapeGeometry(deckShape);
+    const deckMat = new THREE.MeshBasicMaterial({
+      color: 0x8B7355, // brown/wood color
+      transparent: true,
+      opacity: 0.3,
+      side: THREE.DoubleSide,
+    });
+    const deckMesh = new THREE.Mesh(deckGeom, deckMat);
+    deckMesh.position.z = soilUnifiedZ + soilUnifiedDepth / 2 - 0.005;
+    root.add(deckMesh);
+    
+    // Add deck edges
+    const deckEdges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(deckGeom),
+      new THREE.LineBasicMaterial({ color: 0x654321, linewidth: 2 }),
+    );
+    deckEdges.position.z = soilUnifiedZ + soilUnifiedDepth / 2 - 0.004;
+    root.add(deckEdges);
+
     const slabIntersectStartX = Math.max(0, leftWallOuterLeftX);
     const slabIntersectEndX = Math.min(totalRun, ceilingEndX);
     const xAtCeiling = headspaceSlope > 0 ? (ceilingY - headspaceTopLeftY) / headspaceSlope : slabIntersectStartX;
-    const xAtSoilLevel = headspaceSlope > 0 ? (soilLevelY - headspaceTopLeftY) / headspaceSlope : slabIntersectStartX;
-    const deckStartX = THREE.MathUtils.clamp(xAtSoilLevel, slabIntersectStartX, ceilingEndX);
-    const usefulDeckWidthCm = Math.max(0, (ceilingEndX - deckStartX) / SCALE);
+    const usefulDeckWidthCm = Math.max(0, (totalRun - deckVisualStartX) / SCALE);
     const soilFaceZ = soilUnifiedZ + soilUnifiedDepth / 2 - 0.01;
-    addHorizontalDimension(`useful deck width ${usefulDeckWidthCm.toFixed(1)} cm`, deckStartX, ceilingEndX, soilLevelY, soilFaceZ, 0.06);
+    // Show deck dimensions
+    addHorizontalDimension(`deck: 4 cm thick  •  ${usefulDeckWidthCm.toFixed(1)} cm wide`, deckVisualStartX, totalRun, deckBottomY, soilFaceZ, 0.06);
 
     if (slabIntersectEndX > slabIntersectStartX) {
       const overlapStartX = Math.max(slabIntersectStartX, xAtCeiling);
