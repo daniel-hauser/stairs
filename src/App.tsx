@@ -62,8 +62,8 @@ function App() {
   const totalRun = (run / 2) * numRises
   const targetFlightRise = Math.max(1, 289 - topPodestRise - bottomPodestHeight)
   const partialBottomRise = Math.max(0, targetFlightRise - totalRise)
-  const entryRise = topPodestRise
-  const floorRise = totalRise + partialBottomRise + entryRise + bottomPodestHeight
+  const soilToPodestRise = topPodestRise
+  const floorRise = totalRise + partialBottomRise + soilToPodestRise + bottomPodestHeight
   const slope = Math.atan2(totalRise, totalRun) * (180 / Math.PI)
   const formula = 2 * rise + run
   const formulaStatus = formula >= STAIR_FORMULA.min && formula <= STAIR_FORMULA.max ? 'good' : formula > STAIR_FORMULA.max ? 'warn' : 'bad'
@@ -103,26 +103,35 @@ function App() {
   const adjustRun = (delta: number) => setRun((v) => stepToHalf(clamp(v + delta, 20, 30)))
   const adjustTopPodestRise = (delta: number) => setTopPodestRise((v) => stepToHalf(clamp(v + delta, 10, 35)))
   const adjustBottomPodest = (delta: number) => setBottomPodestHeight((v) => stepToHalf(clamp(v + delta, 0, 40)))
-  const adjustStepCount = (delta: number) => {
+  const evaluateStepChange = (delta: number) => {
     const minCount = Math.max(1, Math.ceil(targetFlightRise / 27 - 1e-9))
     const maxCount = Math.max(minCount, Math.floor(targetFlightRise / 15 + 1e-9))
     const targetCount = clamp(numRises + delta, minCount, maxCount)
+    if (targetCount === numRises) {
+      return { canApply: false, nextRise: rise, nextRun: run }
+    }
+
     const formulaTarget = 2 * rise + run
     const nextRise = clamp(targetFlightRise / targetCount, 15, 27)
     const nextRun = stepToHalf(clamp(formulaTarget - (2 * nextRise), 20, 30))
     const testPartial = Math.max(0, targetFlightRise - nextRise * targetCount)
-    if (testPartial > 0.15) return
+    if (testPartial > 0.15) {
+      return { canApply: false, nextRise, nextRun }
+    }
+
+    const riseChanged = Math.abs(nextRise - rise) > 1e-6
+    const runChanged = Math.abs(nextRun - run) > 1e-6
+    return { canApply: riseChanged || runChanged, nextRise, nextRun }
+  }
+
+  const adjustStepCount = (delta: number) => {
+    const { canApply, nextRise, nextRun } = evaluateStepChange(delta)
+    if (!canApply) return
     setRise(Number(nextRise.toFixed(4)))
     setRun(nextRun)
   }
-  const canStepDown = numRises > 1 && (() => {
-    const testMinCount = Math.max(1, Math.ceil(targetFlightRise / 27 - 1e-9))
-    return numRises > testMinCount
-  })()
-  const canStepUp = (() => {
-    const testMaxCount = Math.max(1, Math.floor(targetFlightRise / 15 + 1e-9))
-    return numRises < testMaxCount
-  })()
+  const canStepDown = evaluateStepChange(-1).canApply
+  const canStepUp = evaluateStepChange(1).canApply
 
   const handleSheetPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === 'mouse') return
@@ -286,7 +295,7 @@ function App() {
             />
 
             <SliderCard
-              label={`Top podest rise (${topPodestRise.toFixed(2)} cm)`}
+              label={`Entry rise (${topPodestRise.toFixed(2)} cm)`}
               min={10}
               max={35}
               step={0.5}
@@ -294,6 +303,8 @@ function App() {
               onChange={setTopPodestRise}
               onDecrease={() => adjustTopPodestRise(-0.5)}
               onIncrease={() => adjustTopPodestRise(0.5)}
+              inputClassName="range-safe slider-track"
+              inputStyle={rangeStyle(10, 35, 10, 35)}
             />
 
             <SliderCard
@@ -305,6 +316,8 @@ function App() {
               onChange={setBottomPodestHeight}
               onDecrease={() => adjustBottomPodest(-0.5)}
               onIncrease={() => adjustBottomPodest(0.5)}
+              inputClassName="range-safe slider-track"
+              inputStyle={rangeStyle(0, 40, 0, 40)}
             />
 
             <div className="stat">

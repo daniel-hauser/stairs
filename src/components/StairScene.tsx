@@ -69,14 +69,19 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
     const ceilingY = CEILING_RISE * SCALE;
     const targetRiseToFloor = Math.max(0, TOP_FLOOR_RISE - topPodestRise - bottomPodestHeight) * SCALE;
     const riseResidual = totalRise - targetRiseToFloor;
-    // Keep construction pinned from top floor through a fixed rise-high podest, then down.
-    const fixedTopEntryDrop = topPodestRise * SCALE;
+    // Custom entry rise from floor/soil level down to podest top.
+    const customEntryRise = topPodestRise * SCALE;
+    // Podest-to-step rise should always match step rise.
+    const fixedTopEntryDrop = stepRise;
     const bottomPodestTopY = bottomPodestHeight * SCALE;
     const partialBottomRise = THREE.MathUtils.clamp(-riseResidual, 0, stepRise);
     const hasPartialBottomStep = partialBottomRise > 0.005;
     const underFloorMismatch = riseResidual > 0.005;
-    const stairTopY = topFloorY - fixedTopEntryDrop;
-    const stairBaseY = stairTopY - totalRise;
+    const stairTopY = topFloorY - customEntryRise;
+    // Keep stair stack pinned to podest underside even when top podest rise is changed manually.
+    const dynamicCount = Math.max(0, numRises - 1);
+    const podestBottomY = stairTopY - fixedTopEntryDrop;
+    const stairBaseY = podestBottomY - dynamicCount * stepRise;
 
     const concreteRise = Math.max(0, totalRise - stepRise);
 
@@ -210,7 +215,13 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
     };
 
     const measurementColor = 0x3a3a3a;
-    const measurementMat = new THREE.LineBasicMaterial({ color: measurementColor });
+    const measurementMat = new THREE.LineBasicMaterial({
+      color: measurementColor,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.98,
+    });
 
     const addHorizontalDimension = (text: string, x1: number, x2: number, y: number, z: number, lift = 0.06) => {
       const dimensionY = y + lift;
@@ -278,7 +289,7 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
 
     // Alternating tread steps (same logic as HTML addTread)
     const eps = 0.001;
-    const dynamicCount = Math.max(0, numRises - 1);
+    
     const startOnLeft = Boolean(startSideLeft);
     const sideAtOriginStep = (indexFromOrigin: number) => (startOnLeft ? (indexFromOrigin % 2 === 1) : (indexFromOrigin % 2 === 0));
     const rightCenters: Array<{ x: number; y: number; z: number }> = [];
@@ -384,10 +395,11 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
     const wallWideSpanZ = STAIR_WIDTH + soilUnifiedDepth + soilSideGap;
     const wallWideCenterZ = -((soilUnifiedDepth + soilSideGap) / 2);
 
-    // Left wall profile: 60 cm base segment + 20 cm tower thickness.
+    // Left wall profile: keep inner/base segment at configured height,
+    // but match only the outer part to tall-wall height.
     const leftWallSegmentLen = CFG.dimensions.leftWallSegmentLenCm * SCALE;
     const leftWallSegmentHeight = CFG.dimensions.leftWallSegmentHeightCm * SCALE;
-    const leftWallTowerHeight = CFG.dimensions.leftWallTowerHeightCm * SCALE;
+    const leftWallTowerHeight = tallWallHeight;
     const leftWallTowerThicknessX = CFG.dimensions.leftWallTowerThicknessCm * SCALE;
 
     const leftWallBase = new THREE.Mesh(
@@ -424,8 +436,8 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
     const wallInnerFaceZ = stairRightDescZ;
     const soilUnifiedZ = wallInnerFaceZ - soilUnifiedDepth / 2;
 
-    // Left top area from left wall outer edge to ceiling end.
-    const soilLeftStartX = leftWallOuterLeftX;
+    // Left top area from outer-part inner edge to ceiling end.
+    const soilLeftStartX = leftWallTowerEndX;
     const soilLeftLen = Math.max(0.05, ceilingEndX - soilLeftStartX);
     const soilLeftCenterX = (soilLeftStartX + ceilingEndX) / 2;
     const soilLeft = new THREE.Mesh(
@@ -446,8 +458,8 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
     addVerticalDimension(`soil ${(soilThickness / SCALE).toFixed(0)} cm`, soilLevelY - soilThickness, soilLevelY, leftWallOuterLeftX - 0.08, soilUnifiedDepth * 0.5, -0.06);
     addVerticalDimension(`slab ${(slabThickness / SCALE).toFixed(0)} cm`, ceilingY, ceilingY + slabThickness, leftWallOuterLeftX - 0.02, soilUnifiedDepth * 0.5, -0.16);
 
-    // Transition fill between left wall and sidewall20 start edge.
-    const soilBridgeStartX = leftWallOuterLeftX;
+    // Transition fill between outer-part inner edge and sidewall20 start edge.
+    const soilBridgeStartX = leftWallTowerEndX;
     const soilBridgeLen = Math.max(0.05, ceilingEndX - soilBridgeStartX);
     const soilBridgeCenterX = (soilBridgeStartX + ceilingEndX) / 2;
     const soilBridgeDepth = STAIR_WIDTH;
@@ -637,7 +649,7 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
       addDimLabel('WARNING: partial bottom step', totalRun * 0.24, bottomPodestTopY + 0.16, STAIR_WIDTH * 0.88);
     }
 
-    addVerticalDimension(`entry rise ${(fixedTopEntryDrop / SCALE).toFixed(1)} cm`, stairTopY, topFloorY, stairTopX, STAIR_WIDTH * 0.86, 0.10);
+    addVerticalDimension(`entry rise ${(customEntryRise / SCALE).toFixed(1)} cm`, stairTopY, topFloorY, stairTopX, STAIR_WIDTH * 0.86, 0.10);
     if (Math.abs(riseResidual) > 0.005) {
       const deltaCm = riseResidual / SCALE;
       addDimLabel(
@@ -720,45 +732,71 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
 
     addLabel(`headspace ${headspaceCm.toFixed(0)} cm`, totalRun * 0.52, Math.min(soilLevelY, headspaceTopRightY) + 0.08, STAIR_WIDTH * 0.8);
 
-    // Draw the deck as a 4cm thick visual slab at the top landing
+    // Deck rule: top is at soil level, 4 cm thick, and starts at the
+    // first X where deck-bottom satisfies the headspace envelope.
     const deckThickness = 0.04;
-    const deckTopY = stairTopY;
+    const deckTopY = soilLevelY;
     const deckBottomY = deckTopY - deckThickness;
-    
-    // Create deck geometry (4cm thick rectangle)
-    const deckShape = new THREE.Shape();
-    deckShape.moveTo(0, deckTopY);
-    deckShape.lineTo(totalRun, deckTopY);
-    deckShape.lineTo(totalRun, deckBottomY);
-    deckShape.lineTo(0, deckBottomY);
-    deckShape.closePath();
-    
-    const deckGeom = new THREE.ShapeGeometry(deckShape);
-    const deckMat = new THREE.MeshBasicMaterial({
-      color: 0x8B7355, // brown/wood color
-      transparent: true,
-      opacity: 0.3,
-      side: THREE.DoubleSide,
-    });
-    const deckMesh = new THREE.Mesh(deckGeom, deckMat);
-    deckMesh.position.z = soilUnifiedZ + soilUnifiedDepth / 2 - 0.005;
-    root.add(deckMesh);
-    
-    // Add deck edges
-    const deckEdges = new THREE.LineSegments(
-      new THREE.EdgesGeometry(deckGeom),
-      new THREE.LineBasicMaterial({ color: 0x654321, linewidth: 2 }),
-    );
-    deckEdges.position.z = soilUnifiedZ + soilUnifiedDepth / 2 - 0.004;
-    root.add(deckEdges);
+
+    // Intersect the horizontal deck bottom with the headspace top line.
+    const xAtDeckBottom = headspaceSlope > 0
+      ? (deckBottomY - headspaceTopLeftY) / headspaceSlope
+      : leftWallOuterLeftX;
+    const safeDeckIntersectX = Number.isFinite(xAtDeckBottom) ? xAtDeckBottom : leftWallOuterLeftX;
+    const deckLimitX = THREE.MathUtils.clamp(safeDeckIntersectX, leftWallOuterLeftX, totalRun);
+
+    // Deck is only over the opening (hole): from soil edge to max valid point.
+    const deckStartX = ceilingEndX;
+    const deckEndXByHeadspace = Math.max(deckStartX, deckLimitX);
+    const deckLeftX = deckStartX;
+    const deckRightX = Math.min(holeEndX, deckEndXByHeadspace);
+
+    const deckSpan = deckRightX - deckLeftX;
+    if (deckSpan > 0.001) {
+      const deckShape = new THREE.Shape();
+      deckShape.moveTo(deckLeftX, deckBottomY);
+      deckShape.lineTo(deckRightX, deckBottomY);
+      deckShape.lineTo(deckRightX, deckTopY);
+      deckShape.lineTo(deckLeftX, deckTopY);
+      deckShape.closePath();
+
+      // Extrude across full stair width (Z direction)
+      const deckGeom = new THREE.ExtrudeGeometry(deckShape, {
+        depth: STAIR_WIDTH,
+        bevelEnabled: false,
+      });
+      const deckMat = new THREE.MeshBasicMaterial({
+        color: 0x8B7355, // brown/wood color
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide,
+      });
+      const deckMesh = new THREE.Mesh(deckGeom, deckMat);
+      deckMesh.position.z = -STAIR_WIDTH / 2;  // Center it on the stair width
+      root.add(deckMesh);
+
+      // Add deck edges
+      const deckEdges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(deckGeom),
+        new THREE.LineBasicMaterial({ color: 0x654321, linewidth: 2 }),
+      );
+      deckEdges.position.z = -STAIR_WIDTH / 2;
+      root.add(deckEdges);
+    }
 
     const slabIntersectStartX = Math.max(0, leftWallOuterLeftX);
     const slabIntersectEndX = Math.min(totalRun, ceilingEndX);
     const xAtCeiling = headspaceSlope > 0 ? (ceilingY - headspaceTopLeftY) / headspaceSlope : slabIntersectStartX;
-    const deckWidthCm = (totalRun / SCALE);
-    const soilFaceZ = soilUnifiedZ + soilUnifiedDepth / 2 - 0.01;
-    // Show deck dimensions
-    addHorizontalDimension(`deck: 4 cm thick  •  ${deckWidthCm.toFixed(1)} cm wide`, 0, totalRun, deckBottomY, soilFaceZ, 0.06);
+    const deckLengthCm = (deckRightX - deckLeftX) / SCALE;
+    if (Number.isFinite(deckLengthCm) && deckLengthCm > 0.1) {
+      // Show deck dimensions as separate measurement lines
+      addHorizontalDimension(`deck length ${deckLengthCm.toFixed(1)} cm`, deckLeftX, deckRightX, deckBottomY, STAIR_WIDTH * 0.5, 0.06);
+      const outerPartInnerX = leftWallTowerEndX;
+      const outerPartToDeckCm = (deckRightX - outerPartInnerX) / SCALE;
+      if (Number.isFinite(outerPartToDeckCm) && deckRightX > outerPartInnerX) {
+        addHorizontalDimension(`outer wall inner to deck end ${outerPartToDeckCm.toFixed(1)} cm`, outerPartInnerX, deckRightX, deckTopY, STAIR_WIDTH * 0.74, 0.16);
+      }
+    }
 
     if (slabIntersectEndX > slabIntersectStartX) {
       const overlapStartX = Math.max(slabIntersectStartX, xAtCeiling);
@@ -791,11 +829,59 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
       }
     }
 
+    // Overlap visualization for lower-floor headspace continuation against slab.
+    const lowerTopSlope = (0 - lowerFloorX) > 1e-9
+      ? (lowerTopAtStairY - lowerTopAtFloorY) / (0 - lowerFloorX)
+      : 0;
+    const lowerTopAtX = (x: number) => lowerTopAtFloorY + lowerTopSlope * (x - lowerFloorX);
+    const lowerSlabIntersectStartX = Math.max(leftWallOuterLeftX, lowerFloorX);
+    const lowerSlabIntersectEndX = Math.min(0, ceilingEndX);
+    if (lowerSlabIntersectEndX > lowerSlabIntersectStartX) {
+      const xAtCeilingLower = Math.abs(lowerTopSlope) > 1e-9
+        ? lowerFloorX + (ceilingY - lowerTopAtFloorY) / lowerTopSlope
+        : lowerSlabIntersectStartX;
+      const lowerOverlapStartX = Math.max(lowerSlabIntersectStartX, xAtCeilingLower);
+      if (lowerSlabIntersectEndX > lowerOverlapStartX) {
+        const lowerOverlapShape = new THREE.Shape();
+        lowerOverlapShape.moveTo(lowerOverlapStartX, ceilingY);
+        lowerOverlapShape.lineTo(lowerSlabIntersectEndX, ceilingY);
+        lowerOverlapShape.lineTo(lowerSlabIntersectEndX, Math.min(soilLevelY, lowerTopAtX(lowerSlabIntersectEndX)));
+        lowerOverlapShape.lineTo(lowerOverlapStartX, Math.min(soilLevelY, lowerTopAtX(lowerOverlapStartX)));
+        lowerOverlapShape.closePath();
+
+        const lowerOverlapGeom = new THREE.ExtrudeGeometry(lowerOverlapShape, {
+          depth: headspaceDepth,
+          bevelEnabled: false,
+        });
+        const lowerOverlapMesh = new THREE.Mesh(
+          lowerOverlapGeom,
+          new THREE.MeshBasicMaterial({
+            color: 0xe04f5f,
+            transparent: true,
+            opacity: 0.62,
+            depthWrite: false,
+            polygonOffset: true,
+            polygonOffsetFactor: -2,
+            polygonOffsetUnits: -2,
+          }),
+        );
+        lowerOverlapMesh.position.set(0, 0, -headspaceDepth / 2 + 0.008);
+        root.add(lowerOverlapMesh);
+      }
+    }
+
     // Keep X/Z centered around the orbit target while pinning model bottom to ground (y=0).
     const bounds = new THREE.Box3().setFromObject(root);
     if (!bounds.isEmpty()) {
       const center = bounds.getCenter(new THREE.Vector3());
-      root.position.set(1.25 - center.x, -bounds.min.y, -center.z);
+      if (
+        Number.isFinite(center.x) && Number.isFinite(center.y) && Number.isFinite(center.z)
+        && Number.isFinite(bounds.min.y)
+        && Math.abs(center.x) < 50 && Math.abs(center.y) < 50 && Math.abs(center.z) < 50
+        && Math.abs(bounds.min.y) < 50
+      ) {
+        root.position.set(1.25 - center.x, -bounds.min.y, -center.z);
+      }
     }
 
     return { root, labelsGroup };
@@ -808,7 +894,8 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
     const isPortraitMobile = size.width <= 900 && aspect < 1;
     const fov = isPortraitMobile ? 50 : 42;
     const fovRad = THREE.MathUtils.degToRad(fov / 2);
-    const fitDistance = sphere.radius > 0 ? sphere.radius / Math.sin(fovRad) : 3;
+    const safeRadius = Number.isFinite(sphere.radius) ? THREE.MathUtils.clamp(sphere.radius, 0.5, 12) : 3;
+    const fitDistance = safeRadius / Math.sin(fovRad);
     const initialDistance = fitDistance * (isPortraitMobile ? 1.3 : 1.14);
     const minDistance = Math.max(0.72, fitDistance * (isPortraitMobile ? 0.42 : 0.5));
     const maxDistance = Math.max(minDistance + 0.9, fitDistance * (isPortraitMobile ? 1.7 : 3.0));
