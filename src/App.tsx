@@ -109,9 +109,19 @@ function App() {
     const formulaTarget = 2 * rise + run
     const nextRise = clamp(targetFlightRise / targetCount, 15, 27)
     const nextRun = stepToHalf(clamp(formulaTarget - (2 * nextRise), 20, 30))
+    const testPartial = Math.max(0, targetFlightRise - nextRise * targetCount)
+    if (testPartial > 0.15) return
     setRise(Number(nextRise.toFixed(4)))
     setRun(nextRun)
   }
+  const canStepDown = numRises > 1 && (() => {
+    const testMinCount = Math.max(1, Math.ceil(targetFlightRise / 27 - 1e-9))
+    return numRises > testMinCount
+  })()
+  const canStepUp = (() => {
+    const testMaxCount = Math.max(1, Math.floor(targetFlightRise / 15 + 1e-9))
+    return numRises < testMaxCount
+  })()
 
   const handleSheetPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === 'mouse') return
@@ -328,8 +338,8 @@ function App() {
               <span className="k">Rises / pairs</span>
               <span className="v">{numRises} / {Math.ceil(numRises / 2)}</span>
               <div className="stepper-row">
-                <button className="mini-step-btn" type="button" onClick={() => adjustStepCount(-1)}>-</button>
-                <button className="mini-step-btn" type="button" onClick={() => adjustStepCount(1)}>+</button>
+                <button className="mini-step-btn" type="button" onClick={() => adjustStepCount(-1)} disabled={!canStepDown}>-</button>
+                <button className="mini-step-btn" type="button" onClick={() => adjustStepCount(1)} disabled={!canStepUp}>+</button>
               </div>
             </div>
             <div className="stat">

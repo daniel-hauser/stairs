@@ -322,6 +322,11 @@ svg {
   cursor: pointer;
 }
 
+.mini-step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .sheet-handle {
   display: flex;
   justify-content: center;
