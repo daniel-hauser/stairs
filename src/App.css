@@ -220,31 +220,6 @@ svg {
   grid-column: span 1;
 }
 
-.control-group {
-  grid-column: span 2;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  padding: 8px;
-  border-radius: 4px;
-  border: 2px solid;
-}
-
-.control-group--rise {
-  border-color: #22c55e;
-  background: rgba(34, 197, 94, 0.04);
-}
-
-.control-group--podest {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.04);
-}
-
-.control-group--summary {
-  border-color: #8b5cf6;
-  background: rgba(139, 92, 246, 0.04);
-}
-
 .quick-actions .controls-mini {
   margin-top: 0;
   display: flex;

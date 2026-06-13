@@ -2,9 +2,8 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState, type CSSPropert
 import './App.css'
 import { StairScene } from './components/StairScene.tsx'
 import { StairProfile2D } from './components/StairProfile2D'
-import { SliderWithStepper } from './components/SliderWithStepper.tsx'
+import { SliderCard } from './components/SliderCard.tsx'
 import { StepCounter } from './components/StepCounter.tsx'
-import { ControlGroup } from './components/ControlGroup.tsx'
 import { STAIR_DEFAULTS, STAIR_FORMULA } from './constants/stairDefaults'
 
 type ViewMode = '3d' | '2d'
@@ -260,65 +259,53 @@ function App() {
               </div>
             </div>
 
-            <ControlGroup variant="rise">
-              <div className="stat slider-card">
-                <span className="k">Individual rise ({rise.toFixed(2)} cm)</span>
-                <SliderWithStepper
-                  min={15}
-                  max={27}
-                  step={0.5}
-                  value={rise}
-                  onChange={setRise}
-                  onDecrease={() => adjustRise(-0.5)}
-                  onIncrease={() => adjustRise(0.5)}
-                  inputClassName="range-safe slider-track"
-                  inputStyle={rangeStyle(15, 27, riseSafeMin, riseSafeMax)}
-                />
-              </div>
+            <SliderCard
+              label={`Individual rise (${rise.toFixed(2)} cm)`}
+              min={15}
+              max={27}
+              step={0.5}
+              value={rise}
+              onChange={setRise}
+              onDecrease={() => adjustRise(-0.5)}
+              onIncrease={() => adjustRise(0.5)}
+              inputClassName="range-safe slider-track"
+              inputStyle={rangeStyle(15, 27, riseSafeMin, riseSafeMax)}
+            />
 
-              <div className="stat slider-card">
-                <span className="k">Usable tread run (L/R) ({run.toFixed(2)} cm)</span>
-                <SliderWithStepper
-                  min={20}
-                  max={30}
-                  step={0.5}
-                  value={run}
-                  onChange={setRun}
-                  onDecrease={() => adjustRun(-0.5)}
-                  onIncrease={() => adjustRun(0.5)}
-                  inputClassName="range-safe slider-track"
-                  inputStyle={rangeStyle(20, 30, runSafeMin, runSafeMax)}
-                />
-              </div>
-            </ControlGroup>
+            <SliderCard
+              label={`Usable tread run (L/R) (${run.toFixed(2)} cm)`}
+              min={20}
+              max={30}
+              step={0.5}
+              value={run}
+              onChange={setRun}
+              onDecrease={() => adjustRun(-0.5)}
+              onIncrease={() => adjustRun(0.5)}
+              inputClassName="range-safe slider-track"
+              inputStyle={rangeStyle(20, 30, runSafeMin, runSafeMax)}
+            />
 
-            <ControlGroup variant="podest">
-              <div className="stat slider-card">
-                <span className="k">Top podest rise ({topPodestRise.toFixed(2)} cm)</span>
-                <SliderWithStepper
-                  min={10}
-                  max={35}
-                  step={0.5}
-                  value={topPodestRise}
-                  onChange={setTopPodestRise}
-                  onDecrease={() => adjustTopPodestRise(-0.5)}
-                  onIncrease={() => adjustTopPodestRise(0.5)}
-                />
-              </div>
+            <SliderCard
+              label={`Top podest rise (${topPodestRise.toFixed(2)} cm)`}
+              min={10}
+              max={35}
+              step={0.5}
+              value={topPodestRise}
+              onChange={setTopPodestRise}
+              onDecrease={() => adjustTopPodestRise(-0.5)}
+              onIncrease={() => adjustTopPodestRise(0.5)}
+            />
 
-              <div className="stat slider-card">
-                <span className="k">Bottom podest ({bottomPodestHeight.toFixed(2)} cm)</span>
-                <SliderWithStepper
-                  min={0}
-                  max={40}
-                  step={0.5}
-                  value={bottomPodestHeight}
-                  onChange={setBottomPodestHeight}
-                  onDecrease={() => adjustBottomPodest(-0.5)}
-                  onIncrease={() => adjustBottomPodest(0.5)}
-                />
-              </div>
-            </ControlGroup>
+            <SliderCard
+              label={`Bottom podest (${bottomPodestHeight.toFixed(2)} cm)`}
+              min={0}
+              max={40}
+              step={0.5}
+              value={bottomPodestHeight}
+              onChange={setBottomPodestHeight}
+              onDecrease={() => adjustBottomPodest(-0.5)}
+              onIncrease={() => adjustBottomPodest(0.5)}
+            />
 
             <div className="stat">
               <span className="k">Total rise</span>
@@ -336,23 +323,21 @@ function App() {
               <span className="k">Inclination</span>
               <span className="v">{slope.toFixed(1)}° ({totalRise.toFixed(1)} / {totalRun.toFixed(1)})</span>
             </div>
-            <ControlGroup variant="summary">
-              <div className="stat">
-                <span className="k">Stair formula (2R+T)</span>
-                <span className={`v ${formulaStatus}`}>{formulaLabel}</span>
-              </div>
-              <div className="stat">
-                <span className="k">Rises / pairs</span>
-                <StepCounter
-                  steps={numRises}
-                  pairs={Math.ceil(numRises / 2)}
-                  onDecrease={() => adjustStepCount(-1)}
-                  onIncrease={() => adjustStepCount(1)}
-                  canDecrease={canStepDown}
-                  canIncrease={canStepUp}
-                />
-              </div>
-            </ControlGroup>
+            <div className="stat">
+              <span className="k">Stair formula (2R+T)</span>
+              <span className={`v ${formulaStatus}`}>{formulaLabel}</span>
+            </div>
+            <div className="stat">
+              <span className="k">Rises / pairs</span>
+              <StepCounter
+                steps={numRises}
+                pairs={Math.ceil(numRises / 2)}
+                onDecrease={() => adjustStepCount(-1)}
+                onIncrease={() => adjustStepCount(1)}
+                canDecrease={canStepDown}
+                canIncrease={canStepUp}
+              />
+            </div>
             <div className="stat">
               <span className="k">Concrete volume</span>
               <span className="v">{concreteVolume.toFixed(3)} m3</span>
