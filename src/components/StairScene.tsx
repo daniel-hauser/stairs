@@ -723,10 +723,13 @@ function StairSceneContent({ rise, topPodestRise, bottomPodestHeight, run, numRi
     const slabIntersectStartX = Math.max(0, leftWallOuterLeftX);
     const slabIntersectEndX = Math.min(totalRun, ceilingEndX);
     const xAtCeiling = headspaceSlope > 0 ? (ceilingY - headspaceTopLeftY) / headspaceSlope : slabIntersectStartX;
-    if (xAtCeiling < ceilingEndX && xAtCeiling > slabIntersectStartX) {
-      const edgeToHeadCm = (ceilingEndX - xAtCeiling) / SCALE;
+    const deckThickness = 0.04; // 4 cm deck clearance check
+    const deckCheckY = topFloorY - deckThickness;
+    const xAtDeckCheck = headspaceSlope > 0 ? (deckCheckY - headspaceTopLeftY) / headspaceSlope : slabIntersectStartX;
+    if (xAtDeckCheck < ceilingEndX && xAtDeckCheck > slabIntersectStartX) {
+      const usefulTopAreaCm = (ceilingEndX - xAtDeckCheck) / SCALE;
       const soilFaceZ = soilUnifiedZ + soilUnifiedDepth / 2 - 0.01;
-      addHorizontalDimension(`hole→head ${edgeToHeadCm.toFixed(1)} cm`, xAtCeiling, ceilingEndX, ceilingY, soilFaceZ, 0.10);
+      addHorizontalDimension(`useful top area (deck 4cm) ${usefulTopAreaCm.toFixed(1)} cm`, xAtDeckCheck, ceilingEndX, deckCheckY, soilFaceZ, 0.08);
     }
 
     if (slabIntersectEndX > slabIntersectStartX) {

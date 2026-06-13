@@ -275,19 +275,25 @@ svg {
   margin-top: 6px;
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr) 20px;
-  gap: 6px;
+  gap: 0;
   align-items: center;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-soft);
+  overflow: hidden;
 }
 
 .slider-track {
   width: 100%;
   margin: 0;
+  height: 18px;
+  border-left: 1px solid var(--cp-border);
+  border-right: 1px solid var(--cp-border);
 }
 
 .slider-step-btn {
   appearance: none;
-  border: 1px solid var(--cp-border);
-  background: var(--cp-surface-soft);
+  border: 0;
+  background: var(--cp-surface);
   color: var(--cp-text);
   font: inherit;
   font-size: 0.72rem;
@@ -296,6 +302,10 @@ svg {
   height: 18px;
   padding: 0;
   cursor: pointer;
+}
+
+.slider-step-btn:active {
+  background: var(--cp-accent-soft);
 }
 
 .mini-step-btn {
