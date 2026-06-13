@@ -271,6 +271,33 @@ svg {
   margin-top: 4px;
 }
 
+.slider-inline {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 20px;
+  gap: 6px;
+  align-items: center;
+}
+
+.slider-track {
+  width: 100%;
+  margin: 0;
+}
+
+.slider-step-btn {
+  appearance: none;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-soft);
+  color: var(--cp-text);
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1;
+  width: 20px;
+  height: 18px;
+  padding: 0;
+  cursor: pointer;
+}
+
 .mini-step-btn {
   appearance: none;
   border: 1px solid var(--cp-border);

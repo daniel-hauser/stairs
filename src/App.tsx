@@ -9,7 +9,12 @@ type ViewMode = '3d' | '2d'
 function inferNumRises(rise: number, topPodestRise: number, bottomPodestHeight: number) {
   const topFloorRise = 289
   const targetFlightRise = Math.max(1, topFloorRise - topPodestRise - bottomPodestHeight)
-  const maxFlightRises = Math.floor(targetFlightRise / rise + 1e-9)
+  const rawCount = targetFlightRise / rise
+  const roundedCount = Math.round(rawCount)
+  if (Math.abs(rawCount - roundedCount) < 1e-6) {
+    return Math.max(1, roundedCount)
+  }
+  const maxFlightRises = Math.floor(rawCount + 1e-9)
   return Math.max(1, maxFlightRises)
 }
 
@@ -53,8 +58,8 @@ function App() {
   // Calculate derived values
   const totalRise = rise * numRises
   const totalRun = (run / 2) * numRises
-  const targetRiseToFloor = Math.max(0, 289 - topPodestRise - bottomPodestHeight)
-  const partialBottomRise = Math.max(0, targetRiseToFloor - totalRise)
+  const targetFlightRise = Math.max(1, 289 - topPodestRise - bottomPodestHeight)
+  const partialBottomRise = Math.max(0, targetFlightRise - totalRise)
   const entryRise = topPodestRise
   const floorRise = totalRise + partialBottomRise + entryRise + bottomPodestHeight
   const slope = Math.atan2(totalRise, totalRun) * (180 / Math.PI)
@@ -97,12 +102,13 @@ function App() {
   const adjustTopPodestRise = (delta: number) => setTopPodestRise((v) => stepToHalf(clamp(v + delta, 10, 35)))
   const adjustBottomPodest = (delta: number) => setBottomPodestHeight((v) => stepToHalf(clamp(v + delta, 0, 40)))
   const adjustStepCount = (delta: number) => {
-    const targetCount = Math.max(1, numRises + delta)
-    const targetFlightRise = Math.max(1, 289 - topPodestRise - bottomPodestHeight)
+    const minCount = Math.max(1, Math.ceil(targetFlightRise / 27 - 1e-9))
+    const maxCount = Math.max(minCount, Math.floor(targetFlightRise / 15 + 1e-9))
+    const targetCount = clamp(numRises + delta, minCount, maxCount)
     const formulaTarget = 2 * rise + run
-    const nextRise = stepToHalf(clamp(targetFlightRise / targetCount, 15, 27))
+    const nextRise = clamp(targetFlightRise / targetCount, 15, 27)
     const nextRun = stepToHalf(clamp(formulaTarget - (2 * nextRise), 20, 30))
-    setRise(nextRise)
+    setRise(Number(nextRise.toFixed(4)))
     setRun(nextRun)
   }
 
@@ -243,13 +249,10 @@ function App() {
 
             <div className="stat slider-card">
               <span className="k">Individual rise ({rise.toFixed(2)} cm)</span>
-              <div className="stepper-row">
-                <button className="mini-step-btn" type="button" onClick={() => adjustRise(-0.5)}>-</button>
-                <button className="mini-step-btn" type="button" onClick={() => adjustRise(0.5)}>+</button>
-              </div>
-              <div style={{ marginTop: '6px', display: 'grid' }}>
+              <div className="slider-inline">
+                <button className="slider-step-btn" type="button" onClick={() => adjustRise(-0.5)}>-</button>
                 <input
-                  className="range-safe"
+                  className="range-safe slider-track"
                   style={rangeStyle(15, 27, riseSafeMin, riseSafeMax)}
                   type="range"
                   min="15"
@@ -258,18 +261,16 @@ function App() {
                   value={rise}
                   onChange={(e) => setRise(parseFloat(e.target.value))}
                 />
+                <button className="slider-step-btn" type="button" onClick={() => adjustRise(0.5)}>+</button>
               </div>
             </div>
 
             <div className="stat slider-card">
               <span className="k">Usable tread run (L/R) ({run.toFixed(2)} cm)</span>
-              <div className="stepper-row">
-                <button className="mini-step-btn" type="button" onClick={() => adjustRun(-0.5)}>-</button>
-                <button className="mini-step-btn" type="button" onClick={() => adjustRun(0.5)}>+</button>
-              </div>
-              <div style={{ marginTop: '6px', display: 'grid' }}>
+              <div className="slider-inline">
+                <button className="slider-step-btn" type="button" onClick={() => adjustRun(-0.5)}>-</button>
                 <input
-                  className="range-safe"
+                  className="range-safe slider-track"
                   style={rangeStyle(20, 30, runSafeMin, runSafeMax)}
                   type="range"
                   min="20"
@@ -278,17 +279,16 @@ function App() {
                   value={run}
                   onChange={(e) => setRun(parseFloat(e.target.value))}
                 />
+                <button className="slider-step-btn" type="button" onClick={() => adjustRun(0.5)}>+</button>
               </div>
             </div>
 
             <div className="stat slider-card">
               <span className="k">Top podest rise ({topPodestRise.toFixed(2)} cm)</span>
-              <div className="stepper-row">
-                <button className="mini-step-btn" type="button" onClick={() => adjustTopPodestRise(-0.5)}>-</button>
-                <button className="mini-step-btn" type="button" onClick={() => adjustTopPodestRise(0.5)}>+</button>
-              </div>
-              <div style={{ marginTop: '6px', display: 'grid' }}>
+              <div className="slider-inline">
+                <button className="slider-step-btn" type="button" onClick={() => adjustTopPodestRise(-0.5)}>-</button>
                 <input
+                  className="slider-track"
                   type="range"
                   min="10"
                   max="35"
@@ -296,17 +296,16 @@ function App() {
                   value={topPodestRise}
                   onChange={(e) => setTopPodestRise(parseFloat(e.target.value))}
                 />
+                <button className="slider-step-btn" type="button" onClick={() => adjustTopPodestRise(0.5)}>+</button>
               </div>
             </div>
 
             <div className="stat slider-card">
               <span className="k">Bottom podest ({bottomPodestHeight.toFixed(2)} cm)</span>
-              <div className="stepper-row">
-                <button className="mini-step-btn" type="button" onClick={() => adjustBottomPodest(-0.5)}>-</button>
-                <button className="mini-step-btn" type="button" onClick={() => adjustBottomPodest(0.5)}>+</button>
-              </div>
-              <div style={{ marginTop: '6px', display: 'grid' }}>
+              <div className="slider-inline">
+                <button className="slider-step-btn" type="button" onClick={() => adjustBottomPodest(-0.5)}>-</button>
                 <input
+                  className="slider-track"
                   type="range"
                   min="0"
                   max="40"
@@ -314,6 +313,7 @@ function App() {
                   value={bottomPodestHeight}
                   onChange={(e) => setBottomPodestHeight(parseFloat(e.target.value))}
                 />
+                <button className="slider-step-btn" type="button" onClick={() => adjustBottomPodest(0.5)}>+</button>
               </div>
             </div>
 
